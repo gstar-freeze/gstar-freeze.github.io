@@ -4,18 +4,15 @@
 
    WICHTIG bei jedem Update: VERSION erhöhen (gleich wie APP_VERSION in index.html).
    Nur dann holt sich das iPhone die neuen Dateien. */
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const CACHE = 'gsf-app-' + VERSION;
-const SHELL = [
-  './',
-  'index.html',
-  'manifest.webmanifest',
-  '../assets/icon/apple-touch-icon.png',
-  '../assets/icon/icon-512.png'
-];
+const SHELL = ['./', 'index.html', 'manifest.webmanifest'];            // Pflicht
+const EXTRA = ['../assets/icon/apple-touch-icon.png', '../assets/icon/icon-512.png']; // schön, aber optional
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE)
+    .then(c => c.addAll(SHELL).then(() => Promise.all(EXTRA.map(u => c.add(u).catch(() => {})))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {

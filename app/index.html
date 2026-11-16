@@ -474,7 +474,7 @@ function detect(name){
 /* ---------- Speicher ---------- */
 /* Alle Daten liegen in IndexedDB (Datenbank im Browser des iPhones).
    Jede Änderung wird sofort geschrieben – es gibt keinen Speichern-Knopf. */
-const APP_VERSION='1.0.0';
+const APP_VERSION='1.1.0';
 const DB_NAME='gstar-freeze',DB_VER=1;
 let S=null,db=null,dbOk=false,persisted=null;
 const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
@@ -504,11 +504,25 @@ async function load(){
   }catch(e){S=base;dbOk=false}
   // Entnommenes nach 30 Tagen endgültig entfernen
   const t=todayISO();S.items=S.items.filter(i=>!i.entnommen_am||daysBetween(i.entnommen_am,t)<=30);
+  // Ältere Einträge ohne Änderungszeit: Erfassungsdatum verwenden
+  S.items.forEach(i=>{if(!i.geaendert_am)i.geaendert_am=(i.erstellt_am||t)+'T12:00:00.000Z'});
+  resetSigs();
+}
+/* „geaendert_am“ wird automatisch gesetzt: Beim Speichern wird jeder Artikel mit dem
+   zuletzt gespeicherten Stand verglichen – wer sich verändert hat, bekommt die aktuelle Zeit.
+   So deckt es jede Änderung ab (Bearbeiten, Entnehmen, Rückgängig …), ohne sie einzeln zu markieren. */
+const sig=i=>JSON.stringify(Object.assign({},i,{geaendert_am:0}));
+let lastSig=new Map();
+function resetSigs(){lastSig=new Map(S.items.map(i=>[i.id,sig(i)]))}
+function stamp(){
+  const now=new Date().toISOString(),seen=new Map();
+  for(const i of S.items){const s=sig(i);if(lastSig.get(i.id)!==s&&(lastSig.has(i.id)||!i.geaendert_am))i.geaendert_am=now;seen.set(i.id,s)}
+  lastSig=seen;
 }
 let saveQueued=false;
 function save(){ // mehrere Änderungen im selben Moment → ein Schreibvorgang
   if(!dbOk||saveQueued)return;saveQueued=true;
-  queueMicrotask(()=>{saveQueued=false;
+  queueMicrotask(()=>{saveQueued=false;stamp();
     try{
       const tx=db.transaction(['items','kv'],'readwrite'),st=tx.objectStore('items'),kv=tx.objectStore('kv');
       st.clear();S.items.forEach(i=>st.put(i));
@@ -898,7 +912,7 @@ function saveNew(keepOpen){
 function reAdd(tplId){
   const tpl=S.items.find(i=>i.id===tplId);if(!tpl)return;
   const t=todayISO(),keepDur=tpl.verbrauchen_bis_manuell;
-  const it={...tpl,id:uid(),eingefroren_am:t,erstellt_am:t,entnommen_am:null,notiz:'',
+  const it={...tpl,id:uid(),eingefroren_am:t,erstellt_am:t,entnommen_am:null,notiz:'',geaendert_am:null,
     lagerort:S.locations.some(l=>l.id===tpl.lagerort)?tpl.lagerort:S.locations[0].id,
     verbrauchen_bis:keepDur?addDays(t,Math.max(1,daysBetween(tpl.eingefroren_am,tpl.verbrauchen_bis))):addMonths(t,S.months[tpl.kategorie]??3)};
   S.items.push(it);save();render();
@@ -968,15 +982,42 @@ async function doBackup(){
   S.settings.lastBackup=todayISO();save();render();renderSettings();
   toast(r==='shared'?'Sicherung erstellt – in „Dateien“ ablegen':'Sicherung heruntergeladen');
 }
+let fileMode='restore'; // 'restore' = ersetzen, 'merge' = zusammenführen
 $('#fileIn').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  let d;try{d=JSON.parse(await f.text())}catch(_){alertBox('Datei nicht lesbar','Das ist keine gültige G-Star-Freeze-Sicherung.',[{l:'OK',p:1}]);return}
-  if(!d||d.app!=='gstar-freeze'||!d.daten||!Array.isArray(d.daten.items)){alertBox('Falsche Datei','Diese Datei ist keine G-Star-Freeze-Sicherung.',[{l:'OK',p:1}]);return}
+  let d;try{d=JSON.parse(await f.text())}catch(_){alertBox('Datei nicht lesbar','Das ist keine gültige G-Star-Freeze-Datei.',[{l:'OK',p:1}]);return}
+  if(!d||d.app!=='gstar-freeze'||!d.daten||!Array.isArray(d.daten.items)){alertBox('Falsche Datei','Diese Datei ist keine G-Star-Freeze-Datei.',[{l:'OK',p:1}]);return}
+  if(fileMode==='merge'){mergeIn(d.daten);return}
   const n=d.daten.items.filter(i=>!i.entnommen_am).length;
   alertBox('Sicherung laden?',`Sicherung vom ${fmt((d.erstellt||'').slice(0,10))} mit ${n} Artikeln. Deine aktuellen Daten werden dabei ersetzt.`,[
-    {l:'Laden',p:1,f:()=>{const keep=S.settings;S={...S,items:d.daten.items,locations:d.daten.locations||S.locations,months:{...S.months,...d.daten.months},learned:d.daten.learned||{},settings:keep};save();render();renderSettings();toast('Sicherung geladen')}},
+    {l:'Laden',p:1,f:()=>{const keep=S.settings;S={...S,items:d.daten.items,locations:d.daten.locations||S.locations,months:{...S.months,...d.daten.months},learned:d.daten.learned||{},settings:keep};resetSigs();save();render();renderSettings();toast('Sicherung geladen')}},
     {l:'Abbrechen'}]);
 });
+
+/* ---------- Mit Haushalt abgleichen (Weg 1: Datei per AirDrop) ---------- */
+async function sendHousehold(){
+  const data={app:'gstar-freeze',format:1,typ:'abgleich',erstellt:new Date().toISOString(),daten:{items:S.items,locations:S.locations,learned:S.learned}};
+  const r=await shareOrDownload(`g-star-freeze-abgleich-${todayISO()}.json`,JSON.stringify(data),'application/json');
+  if(r!=='aborted')toast(r==='shared'?'Gesendet – am anderen iPhone „Empfangene Daten zusammenführen“':'Datei erstellt');
+}
+/* Zusammenführen: Neue Artikel kommen dazu; gibt es einen Artikel auf beiden iPhones,
+   gewinnt der zuletzt geänderte Stand (auch Entnahmen). Nichts wird ungefragt gelöscht. */
+function mergeIn(other){
+  const before=JSON.parse(JSON.stringify({items:S.items,locations:S.locations,learned:S.learned}));
+  let neu=0,akt=0;
+  (other.locations||[]).forEach(l=>{if(l&&l.id&&!S.locations.some(x=>x.id===l.id)){S.locations.push(l)}});
+  const byId=new Map(S.items.map(i=>[i.id,i]));
+  for(const o of other.items){
+    if(!o||!o.id)continue;
+    const mine=byId.get(o.id);
+    if(!mine){S.items.push(o);neu++}
+    else if((o.geaendert_am||'')>(mine.geaendert_am||'')){Object.keys(mine).forEach(k=>delete mine[k]);Object.assign(mine,o);akt++}
+  }
+  Object.entries(other.learned||{}).forEach(([k,v])=>{if(!S.learned[k])S.learned[k]=v});
+  // Übernommene Stände behalten ihre Änderungszeit (nicht neu stempeln)
+  resetSigs();save();render();renderSettings();
+  toast(neu||akt?`Zusammengeführt: ${neu} neu, ${akt} aktualisiert`:'Schon auf dem gleichen Stand',()=>{Object.assign(S,before);resetSigs();save();render();renderSettings()});
+}
 function exportCSV(){
   const q=v=>{v=String(v??'');return/[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const head=['Name','Kategorie','Menge','Einheit','Lagerort','Fach','Eingefroren am','Verbrauchen bis','Datum manuell','Quelle','Erfasst am','Entnommen am','Notiz'];
@@ -1023,6 +1064,13 @@ function renderSettings(){
     <div class="sgroup"><label class="srow"><span class="grow">Überfällige am App-Symbol zeigen<small>${badgeStatus()}</small></span><input type="checkbox" class="switch" id="badgeSw" ${s.badge?'checked':''}></label></div>
     <p class="sfoot">Wie bei Mail oder WhatsApp: eine rote Zahl am Symbol auf dem Home-Bildschirm. iOS verlangt dafür einmalig die Erlaubnis „Mitteilungen“ – die App schickt aber keine Mitteilungen. Die Zahl wird jedes Mal aktualisiert, wenn du die App öffnest oder schließt.</p>
 
+    <div class="shdr">Mit Haushalt abgleichen</div>
+    <div class="sgroup">
+      <button class="srow btn" data-act="hhsend">Meine Daten an anderes iPhone senden</button>
+      <button class="srow btn" data-act="hhmerge">Empfangene Daten zusammenführen</button>
+    </div>
+    <p class="sfoot">Für einen gemeinsamen Tiefkühler: Senden (z. B. per AirDrop, „In Dateien sichern“), am anderen iPhone „zusammenführen“ – danach in die Gegenrichtung. Neue Artikel kommen dazu, bei Unterschieden gilt die jüngere Änderung. Nichts wird ersetzt oder gelöscht.</p>
+
     <div class="shdr">Datensicherung</div>
     <div class="sgroup">
       <button class="srow btn" data-act="backup">Sicherung erstellen</button>
@@ -1053,7 +1101,9 @@ $('#setScroll').addEventListener('click',e=>{
     case'monreset':CATS.forEach(c=>S.months[c.id]=c.m);recalcAll();save();renderSettings();toast('Richtwerte zurückgesetzt');break;
     case'forget':S.learned={};save();renderSettings();break;
     case'backup':doBackup();break;
-    case'restore':$('#fileIn').click();break;
+    case'restore':fileMode='restore';$('#fileIn').click();break;
+    case'hhsend':sendHousehold();break;
+    case'hhmerge':fileMode='merge';$('#fileIn').click();break;
     case'csv':exportCSV();break;
   }
 });

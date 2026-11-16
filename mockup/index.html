@@ -12,6 +12,7 @@
 <meta name="theme-color" content="#0A1A2F">
 <meta name="color-scheme" content="light dark">
 <meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="../assets/icon/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="../assets/icon/apple-touch-icon.png">
 <script>
@@ -959,11 +960,19 @@ sheet.querySelector('.dim').onclick=()=>{if(F&&F.mode==='add'&&fName.value.trim(
    ========================================================= */
 const badgeSupported=()=>'setAppBadge' in navigator;
 const isHomeScreenApp=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+let badgeLast='noch nicht versucht';
 function updateBadge(n){
   if(!badgeSupported())return;
   const on=S.settings.badge&&window.Notification&&Notification.permission==='granted';
-  const p=on&&n>0?navigator.setAppBadge(n):navigator.clearAppBadge();
-  p&&p.catch&&p.catch(()=>{});
+  try{
+    const p=on&&n>0?navigator.setAppBadge(n):navigator.clearAppBadge();
+    const what=on&&n>0?'Zahl '+n+' gesetzt':'Zahl entfernt';
+    if(p&&p.then)p.then(()=>{badgeLast=what},e=>{badgeLast='Fehler: '+(e&&e.name||e)});else badgeLast=what;
+  }catch(e){badgeLast='Fehler: '+(e&&e.name||e)}
+}
+function badgeDiag(){
+  const yn=b=>b?'ja':'nein';
+  return`Home-Bildschirm-App: ${yn(isHomeScreenApp())} · Zahl-Funktion: ${yn(badgeSupported())} · Mitteilungen-Funktion: ${yn(!!window.Notification)} · Erlaubnis: ${window.Notification?{granted:'erteilt',denied:'abgelehnt',default:'noch nicht gefragt'}[Notification.permission]:'–'} · Hintergrund-Helfer: ${yn(!!(navigator.serviceWorker&&navigator.serviceWorker.controller))} · Letzter Versuch: ${badgeLast}`;
 }
 function badgeStatus(){
   if(!badgeSupported()||!window.Notification)return isHomeScreenApp()?'Auf diesem Gerät nicht verfügbar.':'Nur in der App vom Home-Bildschirm verfügbar.';
@@ -973,7 +982,7 @@ function badgeStatus(){
 async function toggleBadge(on){
   if(!on){S.settings.badge=false;save();updateBadge(0);renderSettings();return}
   if(!badgeSupported()||!window.Notification){
-    alertBox('Nur auf dem Home-Bildschirm','Die rote Zahl funktioniert, wenn G-Star Freeze über Safari → Teilen → „Zum Home-Bildschirm“ installiert ist und von dort gestartet wird.',[{l:'OK',p:1}]);
+    alertBox(isHomeScreenApp()?'Bitte App neu hinzufügen':'Nur auf dem Home-Bildschirm',isHomeScreenApp()?'Das iPhone bietet dieser App die rote Zahl noch nicht an. Lösche das Icon vom Home-Bildschirm und füge es über Safari → Teilen → „Zum Home-Bildschirm“ neu hinzu.':'Die rote Zahl funktioniert, wenn G-Star Freeze über Safari → Teilen → „Zum Home-Bildschirm“ installiert ist und von dort gestartet wird.',[{l:'OK',p:1}]);
     renderSettings();return}
   let perm=Notification.permission;
   if(perm==='default'){try{perm=await Notification.requestPermission()}catch(_){perm='denied'}}
@@ -1052,7 +1061,9 @@ function renderSettings(){
     <div class="sgroup"><div class="srow"><span class="grow">Gemerkte Korrekturen<small>${nl?nl+' Namen – z. B. „'+esc(Object.keys(S.learned)[0])+'“':'noch keine'}</small></span>${nl?'<button class="txtbtn" data-act="forget">Vergessen</button>':''}</div></div>
 
     <div class="shdr">Rote Zahl am App-Symbol</div>
-    <div class="sgroup"><label class="srow"><span class="grow">Überfällige am App-Symbol zeigen<small>${badgeStatus()}</small></span><input type="checkbox" class="switch" id="badgeSw" ${s.badge?'checked':''}></label></div>
+    <div class="sgroup"><label class="srow"><span class="grow">Überfällige am App-Symbol zeigen<small>${badgeStatus()}</small></span><input type="checkbox" class="switch" id="badgeSw" ${s.badge?'checked':''}></label>
+      <button class="srow btn" data-act="badgetest">Test: Zahl 3 ans Symbol setzen</button>
+      <div class="srow"><small>Technik-Info (für Claude): ${badgeDiag()}</small></div></div>
     <p class="sfoot">Wie bei Mail oder WhatsApp: eine rote Zahl am Symbol auf dem Home-Bildschirm. iOS verlangt dafür einmalig die Erlaubnis „Mitteilungen“ – die App schickt aber keine Mitteilungen. Die Zahl wird jedes Mal aktualisiert, wenn du die App öffnest oder schließt.</p>
 
     <div class="shdr">Datensicherung</div>
@@ -1087,6 +1098,10 @@ $('#setScroll').addEventListener('click',e=>{
     case'months':setUI.monthsOpen=!setUI.monthsOpen;renderSettings();break;
     case'monreset':CATS.forEach(c=>S.months[c.id]=c.m);recalcAll();save();renderSettings();toast('Richtwerte zurückgesetzt');break;
     case'forget':S.learned={};save();renderSettings();break;
+    case'badgetest':{
+      if(!badgeSupported()){toast('Zahl-Funktion auf diesem Gerät nicht verfügbar');renderSettings();break}
+      Promise.resolve().then(()=>navigator.setAppBadge(3)).then(()=>{badgeLast='Test 3 gesetzt';toast('Zahl 3 gesetzt – App verlassen und Icon ansehen')},e=>{badgeLast='Test-Fehler: '+(e&&e.name||e);toast('Fehler: '+(e&&e.name||e))}).finally(renderSettings);
+      break}
     case'backup':doBackup();break;
     case'restore':$('#fileIn').click();break;
     case'csv':exportCSV();break;
@@ -1148,6 +1163,9 @@ addEventListener('resize',setupFrame);
 
 /* Rahmen darf nie wegscrollen (z. B. wenn iOS ein fokussiertes Feld „sichtbar“ machen will) */
 ['#app','#main','#settings','#formSheet'].forEach(s=>{const el=$(s);el.addEventListener('scroll',()=>{if(el.scrollTop||el.scrollLeft){el.scrollTop=0;el.scrollLeft=0}})});
+
+/* Hintergrund-Helfer anmelden (nur über https, z. B. GitHub Pages) */
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 
 /* ---------- Start ---------- */
 load();
