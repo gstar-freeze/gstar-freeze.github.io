@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>G-Star Freeze</title>
+<meta name="description" content="Klickbares Mockup der Tiefkühl-Inventar-App G-Star Freeze">
+<meta name="apple-mobile-web-app-title" content="G-Star Freeze">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A1A2F">
+<meta name="color-scheme" content="light dark">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="../assets/icon/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="../assets/icon/apple-touch-icon.png">
+<script>
+/* Theme vor dem ersten Zeichnen setzen (kein Aufblitzen) */
+(function(){var t='system';try{var s=JSON.parse(localStorage.getItem('gsf-mockup-v1')||'{}');t=(s.settings&&s.settings.theme)||'system'}catch(e){}
+if(t==='system')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t})();
+</script>
+<style>
+:root{
+  --accent:#3FB8FF; --on-accent:#04203A; --tint:#0070BA;
+  --bg:#F2F2F7; --cell:#FFFFFF; --cell-press:#E5E5EA; --elev:#FFFFFF;
+  --label:#000000; --label2:rgba(60,60,67,.62); --label3:rgba(60,60,67,.3);
+  --sep:rgba(60,60,67,.24); --fill:rgba(120,120,128,.12); --fill2:rgba(120,120,128,.24);
+  --ok:#1F7A36; --ok-dot:#34C759; --bad:#C8001A; --bad-dot:#FF3B30; --bad-bg:rgba(255,59,48,.10);
+  --glass:rgba(255,255,255,.72); --glass-border:rgba(255,255,255,.7);
+  --dim:rgba(0,0,0,.32); --toast:rgba(28,28,30,.94);
+  --fz-body1:#F7F9FC; --fz-body2:#E6ECF4; --fz-edge:#C9D2DE; --fz-drawer:rgba(255,255,255,.8); --fz-drawer-edge:rgba(120,145,175,.55); --fz-text:#33475E;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px); --safe-right:env(safe-area-inset-right,0px);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+:root[data-theme=dark]{
+  --tint:#3FB8FF;
+  --bg:#0A1A2F; --cell:#12263F; --cell-press:#1C3655; --elev:#173152;
+  --label:#FFFFFF; --label2:rgba(235,235,245,.66); --label3:rgba(235,235,245,.3);
+  --sep:rgba(140,160,190,.28); --fill:rgba(140,160,190,.18); --fill2:rgba(140,160,190,.32);
+  --ok:#4BDB72; --ok-dot:#30D158; --bad:#FF7A70; --bad-dot:#FF453A; --bad-bg:rgba(255,69,58,.16);
+  --glass:rgba(18,38,63,.72); --glass-border:rgba(255,255,255,.1);
+  --dim:rgba(0,0,0,.55); --toast:rgba(32,58,90,.96);
+  --fz-body1:#1C3657; --fz-body2:#152B48; --fz-edge:#2E4E77; --fz-drawer:rgba(255,255,255,.06); --fz-drawer-edge:rgba(150,180,220,.35); --fz-text:#DCE8F7;
+}
+html{font-size:17px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.3}
+@supports (font: -apple-system-body){html{font:-apple-system-body}} /* Dynamic Type */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--label);-webkit-font-smoothing:antialiased;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+svg{display:block}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------- App-Rahmen ---------- */
+#app{position:fixed;inset:0;overflow:hidden;overflow:clip;background:var(--bg);color:var(--label);isolation:isolate}
+.screen{position:absolute;inset:0;overflow:hidden;overflow:clip;background:var(--bg);transition:transform .38s var(--ease)}
+#settings{transform:translateX(100%);z-index:6;box-shadow:-12px 0 30px rgba(0,0,0,.12)}
+#settings.open{transform:none}
+#main.pushed{transform:translateX(-28%)}
+.scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+  padding:calc(var(--safe-top) + 50px) var(--safe-right) calc(var(--safe-bottom) + 112px) var(--safe-left)}
+.topbar{position:absolute;top:0;left:0;right:0;z-index:4;height:calc(var(--safe-top) + 50px);
+  padding:var(--safe-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left));
+  display:flex;align-items:center;justify-content:space-between;transition:background .2s,box-shadow .2s}
+.topbar.scrolled,.topbar.solid{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);box-shadow:0 .5px 0 var(--sep)}
+.topbar .mini{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-weight:600;opacity:0;transition:opacity .2s;white-space:nowrap}
+.topbar.scrolled .mini,.topbar.solid .mini{opacity:1}
+.glassbtn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:var(--glass);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  box-shadow:0 2px 10px rgba(0,0,0,.08),inset 0 0 0 .5px var(--glass-border);color:var(--label)}
+.glassbtn:active{transform:scale(.92)}
+.lt{font-size:2rem;font-weight:700;line-height:1.15;margin:2px 20px 2px;letter-spacing:.005em}
+.subline{margin:0 20px 14px;color:var(--label2);font-size:.88rem}
+.subline .badtxt{color:var(--bad);font-weight:600}
+
+/* Karten oben */
+.duecard{display:flex;gap:12px;align-items:flex-start;width:calc(100% - 32px);margin:0 16px 12px;padding:14px 16px;border-radius:22px;background:var(--bad-bg);text-align:left}
+.duecard .dot{width:10px;height:10px;border-radius:50%;background:var(--bad-dot);margin-top:6px;flex:none}
+.duecard b{display:block;color:var(--bad);font-size:1rem}
+.duecard span{color:var(--label);font-size:.88rem}
+.okcard{margin:0 16px 12px;padding:12px 16px;border-radius:22px;background:var(--cell);color:var(--label2);font-size:.88rem;display:flex;gap:10px;align-items:center}
+.okcard .dot{width:10px;height:10px;border-radius:50%;background:var(--ok-dot);flex:none}
+.hintcard{margin:0 16px 12px;padding:10px 6px 10px 16px;border-radius:22px;background:var(--cell);display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--label2)}
+.hintcard .grow{flex:1}
+.hintcard .txtbtn{font-size:.88rem}
+
+/* Suche & Segment */
+.search{display:flex;align-items:center;gap:6px;margin:0 16px 12px;padding:0 4px 0 12px;min-height:2.5rem;border-radius:14px;background:var(--fill);color:var(--label2)}
+.search .ic{width:18px;height:18px}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--label);font-size:1rem;padding:8px 0;-webkit-appearance:none;appearance:none}
+.search input::-webkit-search-cancel-button{display:none}
+.search input::placeholder{color:var(--label2)}
+.search button{width:40px;height:40px;display:grid;place-items:center;color:var(--label2)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:0 16px 18px;padding:2px;border-radius:12px;background:var(--fill)}
+.seg button{min-height:40px;border-radius:10px;font-size:.82rem;font-weight:500;text-align:center;color:var(--label)}
+.seg button[aria-pressed=true]{background:var(--cell);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+
+/* Listen */
+.sect{margin:0 16px 22px}
+.sect-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 6px 7px;font-size:.88rem;font-weight:600;color:var(--label2)}
+.sect-h.bad{color:var(--bad)}
+.sect-h small{font-weight:500;font-size:.8rem}
+.group{background:var(--cell);border-radius:22px;overflow:hidden}
+.rw{position:relative;overflow:hidden}
+.rw+.rw::before{content:"";position:absolute;left:70px;right:0;top:0;border-top:.5px solid var(--sep);z-index:3}
+.swa{position:absolute;inset:0;display:flex;justify-content:flex-end;background:var(--accent)}
+.swa button{width:96px;color:var(--on-accent);font-weight:700;font-size:.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:width .2s var(--ease)}
+.rw.full .swa button{width:100%}
+.row{position:relative;z-index:2;display:flex;align-items:center;background:var(--cell);touch-action:pan-y;transition:transform .32s var(--ease)}
+.rmain{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:10px 4px 10px 14px;min-height:68px;text-align:left}
+.rmain:active{background:var(--cell-press)}
+.ico{width:44px;height:44px;border-radius:13px;background:var(--fill);display:grid;place-items:center;font-size:1.4rem;flex:none}
+.rw.isbad .ico{background:var(--bad-bg)}
+.txt{min-width:0;flex:1}
+.nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;margin-top:1px}
+.st .d{width:8px;height:8px;border-radius:50%;flex:none}
+.st.ok{color:var(--ok)}.st.ok .d{background:var(--ok-dot)}
+.st.bad{color:var(--bad)}.st.bad .d{background:var(--bad-dot)}
+.mt{font-size:.82rem;color:var(--label2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.take{width:44px;height:44px;margin-right:8px;border-radius:50%;display:grid;place-items:center;color:var(--tint);flex:none}
+.take .ic{width:30px;height:30px;stroke-width:1.6}
+.take:active{background:var(--fill)}
+.rw.flash .row{animation:flash 1.4s ease}
+@keyframes flash{0%,40%{background:color-mix(in srgb,var(--accent) 28%,var(--cell))}100%{background:var(--cell)}}
+.recent-t{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 32px);margin:0 16px 8px;min-height:44px;padding:0 6px;color:var(--label2);font-size:.88rem;font-weight:600}
+.recent-t .ic{width:16px;height:16px;transition:transform .2s}
+.recent-t[aria-expanded=true] .ic{transform:rotate(90deg)}
+.rrow{display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;min-height:52px}
+.rrow+.rrow{border-top:.5px solid var(--sep)}
+.rrow .txt{color:var(--label2)}
+.rrow .nm{color:var(--label);font-weight:500}
+.empty{text-align:center;padding:40px 28px 20px}
+.empty .snow{font-size:3.4rem}
+.empty h2{font-size:1.3rem;margin:12px 0 6px}
+.empty p{color:var(--label2);font-size:.92rem;margin:0 0 24px}
+.noresult{text-align:center;color:var(--label2);padding:28px 20px}
+
+/* Tiefkühler-Schema */
+.fzcard{display:flex;gap:14px;background:var(--cell);border-radius:22px;padding:14px;margin-bottom:12px}
+.freezer{width:min(54%,200px);flex:none;border-radius:14px;padding:20px 8px 10px;display:flex;flex-direction:column;gap:5px;position:relative;
+  background:linear-gradient(var(--fz-body1),var(--fz-body2));border:2px solid var(--fz-edge)}
+.freezer::before{content:"";position:absolute;top:6px;left:38%;right:8px;height:7px;border-radius:4px;background:var(--fz-edge)}
+.dr{position:relative;min-height:44px;border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 8px 4px 10px;
+  background:var(--fz-drawer);border:1.5px solid var(--fz-drawer-edge);color:var(--fz-text);font-size:.78rem;font-weight:600;text-align:left}
+.dr::after{content:"";position:absolute;left:34%;right:34%;bottom:5px;height:3px;border-radius:2px;background:var(--fz-drawer-edge)}
+.dr.flap{border-style:dashed;min-height:42px}
+.dr.big{min-height:56px}
+.dr[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.dr .c{display:flex;gap:3px}
+.dr .n{min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--fill2);display:grid;place-items:center;font-size:.72rem}
+.dr .n.bad{background:var(--bad-dot);color:#fff}
+.fzinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;font-size:.82rem;color:var(--label2)}
+.fzinfo b{color:var(--label);font-size:.95rem}
+.fzinfo .txtbtn{align-self:flex-start;padding:0;font-size:.88rem}
+
+/* Hinzufügen-Leiste & Toast */
+.addbar{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:24px calc(16px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(16px + var(--safe-left));
+  background:linear-gradient(to bottom,transparent,var(--bg) 55%);pointer-events:none}
+.addbtn{pointer-events:auto;width:100%;min-height:56px;border-radius:28px;background:var(--accent);color:var(--on-accent);font-size:1.06rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(63,184,255,.35),0 2px 6px rgba(0,0,0,.12);transition:transform .15s}
+.addbtn:active{transform:scale(.97)}
+.addbtn .ic{width:22px;height:22px;stroke-width:2.6}
+.toast{position:absolute;z-index:30;left:calc(16px + var(--safe-left));right:calc(16px + var(--safe-right));bottom:calc(var(--safe-bottom) + 80px);
+  display:flex;align-items:center;gap:8px;min-height:52px;padding:4px 4px 4px 18px;border-radius:26px;background:var(--toast);color:#fff;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 10px 30px rgba(0,0,0,.25);
+  opacity:0;transform:translateY(16px);pointer-events:none;transition:opacity .22s,transform .3s var(--ease)}
+.toast.show{opacity:1;transform:none;pointer-events:auto}
+.toast.up{bottom:calc(var(--safe-bottom) + 20px)}
+.toast .tmsg{flex:1;font-size:.9rem}
+.toast .tundo{min-height:44px;padding:0 16px;border-radius:22px;color:#6CCBFF;font-weight:700;font-size:.92rem}
+
+/* Sheets */
+.sheet-wrap{position:absolute;inset:0;z-index:20;pointer-events:none}
+.sheet-wrap .dim{position:absolute;inset:0;background:var(--dim);opacity:0;transition:opacity .3s}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:calc(var(--safe-top) + 10px);display:flex;flex-direction:column;
+  background:var(--bg);border-radius:34px 34px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.2);transform:translateY(105%);transition:transform .42s var(--ease)}
+.sheet-wrap.open{pointer-events:auto}
+.sheet-wrap.open .dim{opacity:1}
+.sheet-wrap.open .sheet{transform:none}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--label3);margin:7px auto 0;flex:none}
+.shead{display:flex;align-items:center;justify-content:space-between;padding:2px 8px 4px;min-height:52px;flex:none;touch-action:none}
+.shead h2{font-size:1rem;font-weight:600;margin:0}
+.txtbtn{min-height:44px;min-width:44px;padding:0 12px;color:var(--tint);font-size:1rem}
+.txtbtn.b{font-weight:700}
+.sbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px calc(16px + var(--safe-right)) calc(var(--safe-bottom) + 28px) calc(16px + var(--safe-left))}
+.namebox{display:flex;align-items:center;min-height:56px;padding:0 6px 0 16px;border-radius:18px;background:var(--cell)}
+.namebox input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:1.12rem;font-weight:600;padding:14px 0}
+.namebox input::placeholder{color:var(--label3);font-weight:500}
+.namebox.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+#fSuggest{margin:10px 0 14px}
+.sglabel{font-size:.8rem;font-weight:600;color:var(--label2);margin:0 4px 6px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:1px 0;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 15px;border-radius:22px;background:var(--fill);font-size:.9rem;font-weight:500;white-space:nowrap;color:var(--label)}
+.chip:active{filter:brightness(.92)}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--on-accent);font-weight:700}
+.chip input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;font-size:16px;cursor:pointer;-webkit-appearance:none}
+.fgroup{background:var(--cell);border-radius:22px;margin-bottom:14px;overflow:hidden}
+.fgroup>*+*{border-top:.5px solid var(--sep)}
+.fblock{padding:12px 14px 14px}
+.flabel{font-size:.8rem;font-weight:600;color:var(--label2);margin:0 0 8px 2px}
+.frow{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:8px 14px;text-align:left}
+.frow .grow{flex:1;min-width:0}
+.frow .t{font-size:.8rem;font-weight:600;color:var(--label2)}
+.frow .v{font-size:1rem;font-weight:600}
+.frow small{display:block;font-size:.8rem;color:var(--label2);font-weight:400}
+.tag{font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:9px;background:var(--fill);color:var(--label2);white-space:nowrap}
+.tag.auto{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--tint)}
+.chev{width:16px;height:16px;color:var(--label3);flex:none;transition:transform .2s}
+[aria-expanded=true] .chev{transform:rotate(90deg)}
+.catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:12px 14px 14px}
+.catgrid .chip{justify-content:flex-start;white-space:normal;text-align:left;line-height:1.15;padding:6px 12px}
+.stepper{display:flex;align-items:center;gap:8px;margin-top:10px}
+.stepper button{width:44px;height:44px;border-radius:50%;background:var(--fill);display:grid;place-items:center;flex:none}
+.stepper output{min-width:70px;text-align:center;font-weight:700;font-size:1.06rem}
+.stepper select{margin-left:auto;min-height:44px;padding:0 12px;border:0;border-radius:14px;background:var(--fill);font-size:1rem;font-weight:500}
+.drawrow{display:flex;gap:6px;margin-top:4px}
+.drw{position:relative;flex:1;min-width:0;min-height:48px;border-radius:10px;background:var(--fill);font-weight:700;font-size:.9rem;text-align:center;padding-bottom:6px}
+.drw::after{content:"";position:absolute;left:30%;right:30%;bottom:7px;height:3px;border-radius:2px;background:var(--label3)}
+.drw.none{flex:1.4;font-size:.78rem;font-weight:600}
+.drw.none::after{display:none}
+.drw[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+.drw[aria-pressed=true]::after{background:var(--on-accent);opacity:.4}
+.fnote{padding:10px 16px 12px;font-size:.8rem;color:var(--label2)}
+.fnote .txtbtn{min-height:32px;padding:0;font-size:.82rem}
+.datebtn{position:relative;flex:none;min-height:44px;padding:0 14px;border-radius:22px;background:var(--fill);color:var(--tint);font-weight:600;font-size:.9rem;display:inline-flex;align-items:center}
+.datebtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;font-size:16px;cursor:pointer;-webkit-appearance:none}
+.mhdwarn{color:var(--bad);font-weight:600}
+.bigbtn{width:100%;min-height:56px;border-radius:28px;background:var(--accent);color:var(--on-accent);font-size:1.06rem;font-weight:700;margin-top:4px}
+.bigbtn.sec{background:var(--fill);color:var(--tint);margin-top:10px}
+.bigbtn:active{transform:scale(.98)}
+.actrow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:0 16px;color:var(--tint);font-weight:500;text-align:left}
+.actrow .ic{width:22px;height:22px}
+.actrow small{margin-left:auto;color:var(--label2);font-size:.75rem;font-weight:400}
+textarea.note{width:100%;min-height:80px;border:0;outline:0;resize:vertical;background:transparent;padding:12px 16px;font-size:1rem}
+.meta{font-size:.8rem;color:var(--label2);text-align:center;margin:6px 0 0}
+
+/* Switch (eigene Darstellung, keine Haptik-Tricks) */
+.switch{-webkit-appearance:none;appearance:none;width:51px;height:31px;margin:0;border-radius:16px;background:var(--fill2);position:relative;flex:none;cursor:pointer;transition:background .2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:transform .22s var(--ease)}
+.switch:checked{background:#34C759}
+.switch:checked::after{transform:translateX(20px)}
+
+/* Einstellungen */
+.sgroup{margin:0 16px 8px;background:var(--cell);border-radius:22px;overflow:hidden}
+.sgroup>*+*{border-top:.5px solid var(--sep)}
+.shdr{margin:22px 22px 7px;font-size:.88rem;font-weight:600;color:var(--label2)}
+.sfoot{margin:6px 22px 0;font-size:.78rem;color:var(--label2);line-height:1.35}
+.srow{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:6px 10px 6px 16px;text-align:left}
+.srow .grow{flex:1;min-width:0}
+.srow small{display:block;color:var(--label2);font-size:.8rem}
+.srow.btn{color:var(--tint);font-weight:500}
+.srow.btn.danger{color:var(--bad)}
+.srow input[type=text]{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:1rem;padding:10px 0}
+.mstep{display:flex;align-items:center;gap:4px;flex:none}
+.mstep button{width:40px;height:40px;border-radius:50%;background:var(--fill);display:grid;place-items:center}
+.mstep button .ic{width:18px;height:18px}
+.mstep output{min-width:62px;text-align:center;font-weight:600;font-size:.92rem}
+.locedit{padding:4px 0 8px;background:color-mix(in srgb,var(--fill) 50%,transparent)}
+.seg.inset{margin:8px 10px 8px 0;flex:none;width:220px}
+
+/* Hinweis-Dialog */
+.alert-wrap{position:absolute;inset:0;z-index:40;display:grid;place-items:center;background:var(--dim);opacity:0;pointer-events:none;transition:opacity .2s}
+.alert-wrap.open{opacity:1;pointer-events:auto}
+.alert-box{width:min(310px,84%);background:var(--elev);border-radius:28px;text-align:center;overflow:hidden;transform:scale(1.08);transition:transform .22s var(--ease);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.alert-wrap.open .alert-box{transform:none}
+.alert-box h3{margin:22px 18px 6px;font-size:1.06rem}
+.alert-box p{margin:0 18px 18px;font-size:.85rem;color:var(--label2)}
+.abtns{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px}
+.abtn{min-height:48px;border-radius:24px;background:var(--fill);font-weight:600;text-align:center}
+.abtn.primary{background:var(--accent);color:var(--on-accent)}
+.abtn.danger{color:var(--bad)}
+
+/* Willkommen */
+.welcome{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;text-align:center;overflow-y:auto;
+  padding:calc(var(--safe-top) + 36px) 30px calc(var(--safe-bottom) + 22px);color:#fff;
+  background:radial-gradient(120% 70% at 50% 18%,#173e68 0%,#0A1A2F 62%);transition:opacity .4s,transform .4s}
+.welcome.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.welcome img{width:132px;height:132px;border-radius:30px;box-shadow:0 14px 44px rgba(63,184,255,.35);margin-top:auto}
+.welcome h1{font-size:1.9rem;margin:22px 0 4px}
+.welcome .claim{color:rgba(255,255,255,.75);margin:0}
+.welcome ul{list-style:none;padding:0;margin:28px 0 30px;display:grid;gap:16px;text-align:left;max-width:340px;font-size:.95rem;color:rgba(255,255,255,.88)}
+.welcome li{display:flex;gap:14px;align-items:flex-start}
+.welcome li span:first-child{font-size:1.3rem;width:28px;text-align:center;flex:none}
+.welcome .go{width:100%;max-width:340px;min-height:56px;border-radius:28px;background:#3FB8FF;color:#04203A;font-weight:700;font-size:1.06rem;margin-top:auto;flex:none}
+.welcome .priv{font-size:.78rem;color:rgba(255,255,255,.6);margin:12px 0 0}
+
+/* ---------- Desktop-Vorschau im iPhone-Rahmen ---------- */
+.island,.sbar,.homeind,#devbar{display:none}
+body.framed{background:#0c1420;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body.framed #devbar{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;max-width:calc(100vw - 16px);padding:4px;border-radius:12px;background:rgba(255,255,255,.07);font-size:12px}
+#devbar button{padding:5px 9px;border-radius:8px;color:#cfe6ff;white-space:nowrap;font-size:12px}
+#devbar button[aria-pressed=true]{background:#3FB8FF;color:#04203A;font-weight:600}
+#devbar .sep{width:1px;background:rgba(255,255,255,.15);margin:4px 4px}
+body.framed #device{transform-origin:center center;margin-top:36px}
+body.framed #app{position:relative;inset:auto;width:var(--w);height:var(--h);border-radius:58px;
+  box-shadow:0 0 0 11px #121212,0 0 0 13px #3b4049,0 40px 90px rgba(0,0,0,.6)}
+body.framed .island{display:block;position:absolute;z-index:200;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000}
+body.framed .island.notch{top:0;width:156px;height:32px;border-radius:0 0 20px 20px}
+body.framed .sbar{display:flex;position:absolute;z-index:199;top:0;left:0;right:0;height:52px;padding:4px 30px 0 40px;align-items:center;justify-content:space-between;font-weight:600;font-size:15px;color:var(--label);pointer-events:none}
+body.framed .sbar.light{color:#fff}
+.sbar .bat{width:25px;height:12px;border:1.5px solid currentColor;border-radius:4px;position:relative;opacity:.9}
+.sbar .bat::after{content:"";position:absolute;inset:1.5px 5px 1.5px 1.5px;background:currentColor;border-radius:1.5px}
+body.framed .homeind{display:block;position:absolute;z-index:199;bottom:8px;left:50%;transform:translateX(-50%);width:136px;height:5px;border-radius:3px;background:var(--label);opacity:.85;pointer-events:none}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<noscript>Bitte JavaScript aktivieren – das Mockup braucht es.</noscript>
+
+<div id="devbar" aria-label="Vorschau-Steuerung (nur am Computer sichtbar)">
+  <button data-dev="16e">iPhone 16e</button><button data-dev="16">iPhone 16</button><button data-dev="16pm">iPhone 16 Pro Max</button>
+  <span class="sep"></span>
+  <button data-theme-set="system">System</button><button data-theme-set="light">Hell</button><button data-theme-set="dark">Dunkel</button>
+</div>
+
+<div id="device">
+<div id="app">
+  <div class="sbar" id="sbar"><span>9:41</span><span class="bat"></span></div>
+  <div class="island" id="island"></div>
+
+  <!-- ===== Übersicht ===== -->
+  <section id="main" class="screen" aria-label="Vorrat">
+    <header class="topbar" id="mainBar">
+      <span style="width:44px"></span>
+      <span class="mini" aria-hidden="true">Vorrat</span>
+      <button class="glassbtn" id="openSettings" aria-label="Einstellungen">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </header>
+    <div class="scroll" id="mainScroll">
+      <h1 class="lt">Vorrat</h1>
+      <p class="subline" id="subline"></p>
+      <div id="due"></div>
+      <div id="hint"></div>
+      <div id="controls">
+        <label class="search">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Suchen" aria-label="Artikel suchen" autocomplete="off" autocorrect="off" enterkeyhint="search">
+          <button id="qClear" type="button" aria-label="Suche löschen" hidden><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </label>
+        <div class="seg" role="group" aria-label="Sortierung">
+          <button data-mode="urgency">Dringlichkeit</button><button data-mode="cat">Kategorie</button><button data-mode="loc">Lagerort</button>
+        </div>
+      </div>
+      <div id="list" role="list"></div>
+      <div id="recent"></div>
+    </div>
+    <div class="addbar" id="addbar">
+      <button class="addbtn" id="addBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Hinzufügen</button>
+    </div>
+  </section>
+
+  <!-- ===== Einstellungen ===== -->
+  <section id="settings" class="screen" aria-label="Einstellungen" aria-hidden="true">
+    <header class="topbar solid">
+      <button class="glassbtn" id="closeSettings" aria-label="Zurück zum Vorrat"><svg class="ic" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span class="mini">Einstellungen</span>
+      <span style="width:44px"></span>
+    </header>
+    <div class="scroll" id="setScroll"></div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span class="tmsg"></span><button class="tundo" type="button">Rückgängig</button></div>
+
+  <!-- ===== Sheet: Hinzufügen / Bearbeiten ===== -->
+  <div class="sheet-wrap" id="formSheet">
+    <div class="dim" data-close></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+      <div class="grab" aria-hidden="true"></div>
+      <div class="shead" id="fHead">
+        <button class="txtbtn" id="fCancel" type="button">Abbrechen</button>
+        <h2 id="formTitle">Neuer Artikel</h2>
+        <button class="txtbtn b" id="fSave" type="button">Sichern</button>
+      </div>
+      <div class="sbody" id="fBody">
+        <div class="namebox" id="nameBox">
+          <input id="fName" type="text" placeholder="Was kommt rein? z. B. Hähnchenbrust" aria-label="Name des Artikels"
+                 autocomplete="off" autocapitalize="sentences" enterkeyhint="done" spellcheck="false">
+        </div>
+        <div id="fSuggest"></div>
+        <div id="fRest"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-wrap" id="alert"><div class="alert-box" role="alertdialog" aria-modal="true" aria-labelledby="alertT"><h3 id="alertT"></h3><p id="alertM"></p><div class="abtns" id="alertB"></div></div></div>
+
+  <div class="welcome" id="welcome" hidden role="dialog" aria-label="Willkommen">
+    <img src="../assets/icon/apple-touch-icon.png" alt="">
+    <h1>G-Star Freeze</h1>
+    <p class="claim">Wissen, was im Tiefkühler liegt.</p>
+    <ul>
+      <li><span>➕</span><span>Artikel in Sekunden erfassen – Kategorie und Verbrauchsdatum rechnet die App selbst aus.</span></li>
+      <li><span>🔴</span><span>Rot heißt: jetzt verbrauchen. Alles andere ist im grünen Bereich.</span></li>
+      <li><span>👈</span><span>Zum Entnehmen nach links wischen oder auf ⊖ tippen. Versehen? Einfach „Rückgängig“.</span></li>
+    </ul>
+    <button class="go" id="goBtn">Los geht’s</button>
+    <p class="priv">Alle Daten bleiben auf diesem iPhone. Kein Konto, kein Tracking.</p>
+  </div>
+
+  <input type="file" id="fileIn" accept=".json,application/json" hidden>
+  <div class="homeind" aria-hidden="true"></div>
+</div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   G-Star Freeze – klickbares Mockup (Phase 1)
+   Daten liegen nur im localStorage dieses Browsers.
+   ========================================================= */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICON={
+  minusCircle:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>',
+  minus:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+  plus:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  chev:'<svg class="ic chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>',
+  out:'<svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M3 12h13M11 7l5 5-5 5"/><path d="M20 4v16"/></svg>',
+  cal:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  share:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg>',
+  undo:'<svg class="ic" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>',
+};
+
+/* ---------- Kategorien (Richtwerte: unterer Wert, siehe Doku/lagerdauer-quellen.md) ---------- */
+const CATS=[
+ {id:'rind',n:'Rind, Kalb, Wild',e:'🥩',m:9,kw:['rind','rinder','kalb','kalbs','wild','reh','hirsch','wildschwein','steak','roulade','rouladen','rinderroulade','rinderrouladen','tafelspitz','lamm','rindergulasch','entrecote','ochse','rumpsteak','sauerbraten','kalbsschnitzel','rehrücken']},
+ {id:'schwein',n:'Schwein',e:'🐖',m:6,kw:['schwein','schweine','kotelett','schnitzel','nacken','schweinebauch','haxe','eisbein','rippchen','spareribs','kassler','kasseler','schweinegulasch','pulled pork','schäufele','schweinefilet','krustenbraten','schweinebraten']},
+ {id:'hack',n:'Hackfleisch',e:'🍔',m:1,kw:['hack','hackfleisch','gehacktes','mett','frikadelle','frikadellen','bulette','buletten','hackbällchen','rinderhack','rinderhackfleisch','burger','patty','patties','cevapcici','köttbullar','hackbraten']},
+ {id:'gefl',n:'Geflügel',e:'🍗',m:8,kw:['hähnchen','hühnchen','huhn','hühner','chicken','pute','puten','truthahn','ente','enten','gans','geflügel','wings','hendl','poularde','putenschnitzel','hähnchenschnitzel','putenbrust']},
+ {id:'wurst',n:'Wurst, Schinken',e:'🌭',m:1,kw:['wurst','würstchen','würstel','schinken','salami','speck','wiener','bockwurst','leberkäse','chorizo','nürnberger','lyoner','fleischwurst','bacon','bratwurst']},
+ {id:'fm',n:'Fisch (mager)',e:'🐟',m:6,kw:['fisch','kabeljau','seelachs','alaska','scholle','zander','forelle','pangasius','rotbarsch','dorsch','schellfisch','tilapia','barsch','hecht','fischstäbchen','backfisch','seehecht']},
+ {id:'ff',n:'Fisch (fett)',e:'🐠',m:2,kw:['lachs','makrele','hering','thunfisch','aal','sardine','sardinen','karpfen','matjes','sprotten','heilbutt','räucherlachs','wildlachs']},
+ {id:'meer',n:'Meeresfrüchte',e:'🦐',m:3,kw:['garnele','garnelen','shrimp','shrimps','krabben','scampi','muschel','muscheln','tintenfisch','calamari','meeresfrüchte','gambas','hummer','oktopus','pulpo']},
+ {id:'gem',n:'Gemüse',e:'🥦',m:6,kw:['gemüse','erbsen','bohnen','brokkoli','broccoli','spinat','möhren','karotten','rosenkohl','blumenkohl','mais','paprika','zucchini','rotkohl','blaukraut','grünkohl','suppengemüse','kaiserschoten','pilze','champignons','pfifferlinge','kürbis','lauch','porree','zwiebel','zwiebeln','kartoffel','kartoffeln','pommes','rahmspinat','edamame','spargel','sellerie','aubergine','tomaten','wokgemüse','kohlrabi','rosenkohl']},
+ {id:'kraut',n:'Kräuter',e:'🌿',m:6,kw:['kräuter','petersilie','schnittlauch','dill','basilikum','koriander','bärlauch','minze','thymian','rosmarin','salbei','ingwer','kräutermischung']},
+ {id:'obst',n:'Obst, Beeren',e:'🍓',m:8,kw:['obst','beeren','erdbeer','erdbeeren','himbeer','himbeeren','heidelbeer','heidelbeeren','blaubeer','blaubeeren','johannisbeer','johannisbeeren','brombeer','brombeeren','kirsche','kirschen','mango','apfel','äpfel','apfelmus','pflaume','pflaumen','zwetschge','zwetschgen','banane','bananen','rhabarber','waldfrüchte','smoothie','ananas','aprikose','aprikosen','pfirsich','trauben','beerenmix']},
+ {id:'brot',n:'Brot, Backwaren',e:'🥖',m:1,kw:['brot','brötchen','baguette','toast','croissant','croissants','laugen','brezel','brezeln','bagel','ciabatta','semmel','semmeln','schrippe','schrippen','weckle','aufbackbrötchen','fladenbrot','zopf','toastbrot']},
+ {id:'kuchen',n:'Kuchen, Teig',e:'🍰',m:2,kw:['kuchen','torte','teig','muffin','muffins','blätterteig','hefeteig','mürbeteig','pizzateig','waffel','waffeln','brownie','brownies','plätzchen','kekse','strudel','berliner','donut','donuts','pfannkuchen','crêpes']},
+ {id:'milch',n:'Milchprodukte, Käse',e:'🧀',m:2,kw:['butter','käse','milch','sahne','quark','joghurt','mozzarella','parmesan','reibekäse','frischkäse','schmand','crème fraîche','creme fraiche','gouda','feta','emmentaler','kräuterbutter','eier','eigelb','eiweiß']},
+ {id:'fertig',n:'Fertiggerichte, Reste',e:'🍲',m:1,kw:['suppe','eintopf','bolognese','soße','sauce','chili','curry','lasagne','auflauf','reste','gulasch','maultaschen','klöße','knödel','brühe','fond','risotto','gericht','essen','linsen','ragout','frikassee','pizza','reis','nudeln','spätzle','gnocchi','kartoffelsuppe','gemüsesuppe','hühnersuppe','hühnerbrühe','gemüsebrühe','milchreis']},
+ {id:'eis',n:'Eis (angebrochen)',e:'🍨',m:2,kw:['eis','eiscreme','speiseeis','vanilleeis','schokoeis','erdbeereis','sorbet','stracciatella']},
+ {id:'sonst',n:'Sonstiges',e:'❄️',m:3,kw:[]},
+];
+const CAT=Object.fromEntries(CATS.map(c=>[c.id,c]));
+const catOf=id=>CAT[id]||CAT.sonst;
+const COMMON=['Hähnchenbrust','Hähnchenschenkel','Putenbrust','Entenbrust','Rinderhackfleisch','Gemischtes Hack','Frikadellen','Rindersteak','Rinderrouladen','Rindergulasch','Rehrücken','Schweineschnitzel','Schweinebraten','Kotelett','Schweinefilet','Bratwurst','Wiener Würstchen','Speck','Lachsfilet','Seelachsfilet','Fischstäbchen','Forelle','Garnelen','Erbsen','Brokkoli','Rahmspinat','Blattspinat','Rosenkohl','Bohnen','Suppengemüse','Rotkohl','Pommes','Champignons','Petersilie','Schnittlauch','Kräutermischung','Bärlauch','Erdbeeren','Himbeeren','Heidelbeeren','Kirschen','Mango','Waldfrüchte','Apfelmus','Brötchen','Toastbrot','Vollkornbrot','Baguette','Croissants','Laugenbrezeln','Apfelkuchen','Pizzateig','Blätterteig','Hefeteig','Waffeln','Butter','Kräuterbutter','Reibekäse','Mozzarella','Sahne','Bolognese','Gulasch','Chili con Carne','Gemüsesuppe','Kartoffelsuppe','Hühnerbrühe','Lasagne','Maultaschen','Knödel','Pizza','Vanilleeis','Schokoeis'];
+
+/* ---------- Datum ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const toISO=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const fromISO=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12)};
+const todayISO=()=>toISO(new Date());
+const addDays=(s,n)=>{const d=fromISO(s);d.setDate(d.getDate()+n);return toISO(d)};
+function addMonths(s,n){const d=fromISO(s),day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return toISO(d)}
+const daysBetween=(a,b)=>Math.round((fromISO(b)-fromISO(a))/864e5);
+const fmt=s=>{if(!s)return'';const[y,m,d]=s.split('-');return d+'.'+m+'.'+y};
+const daysLeft=it=>daysBetween(todayISO(),it.verbrauchen_bis);
+const isBad=it=>daysLeft(it)<=0;
+function relText(n){
+  if(n<0){const a=-n;if(a===1)return'seit gestern fällig';if(a<14)return`seit ${a} Tagen fällig`;if(a<60)return`seit ${Math.round(a/7)} Wochen fällig`;return`seit ${Math.round(a/30.44)} Monaten fällig`}
+  if(n===0)return'heute fällig';if(n===1)return'noch 1 Tag';if(n<14)return`noch ${n} Tage`;if(n<60)return`noch ${Math.round(n/7)} Wochen`;
+  const m=Math.round(n/30.44);return m===1?'noch 1 Monat':`noch ${m} Monate`}
+function inText(n){
+  if(n<0)return relText(n);if(n===0)return'heute';if(n===1)return'morgen';if(n<14)return`in ${n} Tagen`;if(n<60)return`in ${Math.round(n/7)} Wochen`;
+  const m=Math.round(n/30.44);return m===1?'in 1 Monat':`in ${m} Monaten`}
+function agoText(s){const n=daysBetween(s,todayISO());return n===0?'heute':n===1?'gestern':`vor ${n} Tagen`}
+
+/* ---------- Text-Normalisierung & Kategorie-Erkennung ---------- */
+const norm=s=>String(s||'').toLowerCase().trim().replace(/\s+/g,' ').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[éèê]/g,'e');
+const KW=[];CATS.forEach(c=>c.kw.forEach(k=>KW.push({cat:c.id,k:norm(k)})));
+/* Deutsche Zusammensetzungen: das Grundwort steht hinten (Hähnchen|curry → Fertiggericht).
+   Deshalb gewinnt der Treffer, der am weitesten hinten endet; bei Gleichstand der längere. */
+function detect(name){
+  const n=norm(name);if(!n)return{cat:'sonst',how:null};
+  if(S&&S.learned[n])return{cat:S.learned[n],how:'gemerkt'};
+  let best=null,score=-1;
+  for(const{cat,k}of KW){
+    let end=-1;
+    if(k.length<=3){const re=new RegExp('(^|[\\s\\-])'+k,'g');let m;while((m=re.exec(n)))end=m.index+m[0].length}
+    else{const i=n.lastIndexOf(k);if(i>=0)end=i+k.length}
+    if(end>=0){const sc=end*100+k.length;if(sc>score){score=sc;best=cat}}
+  }
+  return best?{cat:best,how:'erkannt'}:{cat:'sonst',how:'unbekannt'};
+}
+
+/* ---------- Speicher ---------- */
+const KEY='gsf-mockup-v1';
+let S=null;
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+function seed(){
+  const t=todayISO(),ago=d=>addDays(t,-d);
+  const months=Object.fromEntries(CATS.map(c=>[c.id,c.m]));
+  // [Name, Kategorie, Menge, Einheit, Lagerort, Fach, vor X Tagen eingefroren, Extras]
+  const raw=[
+    ['Hähnchenbrust','gefl',2,'Stück','tk',3,20],
+    ['Rinderhackfleisch','hack',500,'g','tk',2,48],
+    ['Lachsfilet','ff',2,'Stück','tk',4,75],
+    ['Bolognese','fertig',3,'Portion','tk',2,36],
+    ['Brötchen','brot',6,'Stück','gf',null,33],
+    ['Rinderrouladen','rind',4,'Stück','tk',3,120],
+    ['Schweinebraten','schwein',1,'kg','tr',null,150],
+    ['Bratwurst','wurst',1,'Packung','tk',3,10],
+    ['Seelachsfilet','fm',1,'Packung','tk',4,60],
+    ['Garnelen','meer',1,'Packung','tk',4,30],
+    ['Erbsen','gem',1,'Packung','tk',5,14,{mhd:270}],
+    ['Brokkoli','gem',500,'g','tk',5,100],
+    ['Rahmspinat','gem',1,'Packung','tk',5,40,{mhd:150}],
+    ['Petersilie','kraut',1,'Packung','gf',null,50],
+    ['Erdbeeren','obst',1,'kg','tr',null,140],
+    ['Heidelbeeren','obst',500,'g','tk',6,30],
+    ['Vollkornbrot','brot',2,'Stück','tk',6,12],
+    ['Butter','milch',2,'Stück','gf',null,25],
+    ['Reibekäse','milch',1,'Packung','tk',6,70],
+    ['Gulasch','fertig',2,'Portion','tr',null,15],
+    ['Kartoffelsuppe','fertig',2,'Portion','tk',2,5],
+    ['Vanilleeis','eis',1,'Packung','tk',1,20],
+    ['Apfelkuchen','kuchen',4,'Stück','tk',1,40],
+    ['Rehrücken','rind',1,'Stück','tr',null,255],
+    ['Fischstäbchen','fm',1,'Packung','tk',4,40,{taken:3,mhd:200}],
+    ['Pizzateig','kuchen',1,'Stück','gf',null,20,{taken:9}],
+  ];
+  const items=raw.map(([name,cat,menge,einheit,loc,fach,d,x={}])=>{
+    const frozen=ago(d);
+    const it={id:uid(),name,kategorie:cat,menge,einheit,lagerort:loc,fach,eingefroren_am:frozen,
+      verbrauchen_bis:addMonths(frozen,months[cat]),verbrauchen_bis_manuell:false,quelle:'selbst',
+      erstellt_am:frozen,entnommen_am:null,notiz:''};
+    if(x.mhd){it.quelle='gekauft';it.verbrauchen_bis=addDays(t,x.mhd);it.verbrauchen_bis_manuell=true}
+    if(x.taken)it.entnommen_am=ago(x.taken);
+    return it});
+  return{items,
+    locations:[{id:'tk',name:'Tiefkühler',faecher:6},{id:'gf',name:'Gefrierfach Kühlschrank',faecher:0},{id:'tr',name:'Truhe Keller',faecher:0}],
+    months,learned:{},
+    settings:{lastLoc:'tk',lastFach:3,lastBackup:null,firstUse:ago(45),hintDismissed:null,welcomed:false,theme:'system',view:'urgency',device:'16',badge:false},v:2};
+}
+function load(){
+  try{const raw=localStorage.getItem(KEY);if(raw)S=JSON.parse(raw)}catch(e){S=null}
+  if(!S||!Array.isArray(S.items))S=seed();
+  S.months=Object.assign(Object.fromEntries(CATS.map(c=>[c.id,c.m])),S.months||{});
+  S.learned=S.learned||{};
+  if(!(S.v>=2)){ // Kräuter-Richtwert 3 → 6 Monate (Entscheidung 16.11.2026)
+    if(S.months.kraut===3)S.months.kraut=6;
+    S.items.forEach(i=>{if(i.kategorie==='kraut'&&!i.verbrauchen_bis_manuell&&i.quelle==='selbst')i.verbrauchen_bis=addMonths(i.eingefroren_am,S.months.kraut)});
+    S.v=2;
+  }
+  // Entnommenes nach 30 Tagen endgültig entfernen
+  const t=todayISO();S.items=S.items.filter(i=>!i.entnommen_am||daysBetween(i.entnommen_am,t)<=30);
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+const active=()=>S.items.filter(i=>!i.entnommen_am);
+const locOf=id=>S.locations.find(l=>l.id===id)||S.locations[0];
+const countable=u=>u!=='g'&&u!=='kg';
+const byDue=(a,b)=>a.verbrauchen_bis.localeCompare(b.verbrauchen_bis)||a.name.localeCompare(b.name,'de');
+function fmtQty(m,u){
+  const v=String(m).replace('.',',');
+  if(u==='Packung')return`${v} ${m==1?'Packung':'Packungen'}`;
+  if(u==='Portion')return`${v} ${m==1?'Portion':'Portionen'}`;
+  return`${v} ${u}`}
+function fachName(loc,f){return f===1&&loc.faecher>=2?'Fach 1 (Klappe)':'Fach '+f}
+function whereText(it){const l=locOf(it.lagerort);return l.name+(it.fach&&l.faecher?' · Fach '+it.fach:'')}
+
+/* =========================================================
+   Übersicht
+   ========================================================= */
+const ui={mode:'urgency',fach:null,recentOpen:false};
+const list=$('#list');
+
+function render(){
+  const all=active(),bad=all.filter(isBad);
+  updateBadge(bad.length);
+  // Zusammenfassung
+  $('#subline').innerHTML=all.length?`${all.length} Artikel`+(bad.length?` · <span class="badtxt">${bad.length} überfällig</span>`:''):'';
+  // Überfällig-Karte
+  if(bad.length){
+    const names=bad.sort(byDue).map(i=>i.name);
+    $('#due').innerHTML=`<button class="duecard" id="dueBtn"><span class="dot"></span><span><b>Jetzt verbrauchen</b><span>${esc(names.slice(0,4).join(', '))}${names.length>4?' und '+(names.length-4)+' weitere':''}</span></span></button>`;
+  }else $('#due').innerHTML=all.length?`<div class="okcard"><span class="dot"></span>Nichts überfällig – alles im grünen Bereich.</div>`:'';
+  renderHint(all);
+  // Leerer Zustand
+  const empty=!all.length;
+  $('#controls').hidden=empty;$('#addbar').hidden=empty;
+  $$('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===ui.mode));
+  if(empty){
+    list.innerHTML=`<div class="empty"><div class="snow">❄️</div><h2>Dein Tiefkühler ist noch leer</h2>
+      <p>Erfasse, was drin liegt – auch ältere Sachen mit ihrem Einfrierdatum.</p>
+      <button class="addbtn" data-add>${ICON.plus}Ersten Artikel hinzufügen</button></div>`;
+    renderRecent();return;
+  }
+  const q=norm($('#q').value);
+  let items=all.slice().sort(byDue),h='';
+  if(q){
+    items=items.filter(i=>norm(i.name).includes(q)||norm(catOf(i.kategorie).n).includes(q)||norm(whereText(i)).includes(q));
+    h=items.length?section(`${items.length} Treffer`,items):`<div class="noresult">Nichts gefunden für „${esc($('#q').value)}“.</div>`;
+  }else if(ui.mode==='urgency'){
+    const b=items.filter(isBad),o=items.filter(i=>!isBad(i));
+    if(b.length)h+=section('Überfällig',b,'bad');
+    if(o.length)h+=section(b.length?'Im grünen Bereich':'Alle Artikel',o);
+  }else if(ui.mode==='cat'){
+    CATS.forEach(c=>{const l=items.filter(i=>i.kategorie===c.id);if(l.length)h+=section(`${c.e}  ${c.n}`,l)});
+  }else{
+    S.locations.forEach(loc=>{
+      const l=items.filter(i=>i.lagerort===loc.id);
+      if(!l.length&&!loc.faecher)return;
+      if(loc.faecher){
+        h+=`<div class="sect"><div class="sect-h"><span>${esc(loc.name)}</span><small>${l.length} Artikel</small></div>${freezer(loc,l)}</div>`;
+        const sel=ui.fach&&ui.fach.loc===loc.id?ui.fach.f:null;
+        for(let f=1;f<=loc.faecher;f++){if(sel&&sel!==f)continue;const ll=l.filter(i=>i.fach===f);if(ll.length)h+=section(`${esc(loc.name)} · ${fachName(loc,f)}`,ll)}
+        const rest=l.filter(i=>!i.fach||i.fach>loc.faecher);
+        if(rest.length&&!sel)h+=section(`${esc(loc.name)} · ohne Fach`,rest);
+      }else h+=section(esc(loc.name),l);
+    });
+  }
+  list.innerHTML=h;
+  renderRecent();
+}
+function section(title,items,cls=''){
+  return`<div class="sect"><div class="sect-h ${cls}"><span>${title}</span><small>${items.length}</small></div><div class="group">${items.map(rowHTML).join('')}</div></div>`}
+function rowHTML(it){
+  const n=daysLeft(it),bad=n<=0,c=catOf(it.kategorie),one=countable(it.einheit)&&it.menge>1;
+  return`<div class="rw ${bad?'isbad':''}" data-id="${it.id}" role="listitem">
+    <div class="swa"><button data-take="${it.id}" tabindex="-1" aria-hidden="true">${ICON.out}${one?'1 entnehmen':'Entnehmen'}</button></div>
+    <div class="row">
+      <button class="rmain" data-open="${it.id}" aria-label="${esc(it.name)}, ${fmtQty(it.menge,it.einheit)}, ${esc(whereText(it))}, ${relText(n)}${it.quelle==='gekauft'?' laut MHD':''}. Details öffnen">
+        <span class="ico" aria-hidden="true">${c.e}</span>
+        <span class="txt" aria-hidden="true">
+          <span class="nm" style="display:block">${esc(it.name)}</span>
+          <span class="st ${bad?'bad':'ok'}"><span class="d"></span>${relText(n)}${it.quelle==='gekauft'?' · MHD':''}</span>
+          <span class="mt" style="display:block">${fmtQty(it.menge,it.einheit)} · ${esc(whereText(it))}</span>
+        </span>
+      </button>
+      <button class="take" data-take="${it.id}" aria-label="${one?'Eins entnehmen':'Entnehmen'}: ${esc(it.name)}">${ICON.minusCircle}</button>
+    </div></div>`}
+function freezer(loc,items){
+  const sel=ui.fach&&ui.fach.loc===loc.id?ui.fach.f:null;
+  let d='';
+  for(let f=1;f<=loc.faecher;f++){
+    const l=items.filter(i=>i.fach===f),b=l.filter(isBad).length;
+    const cls=f===1&&loc.faecher>=2?'flap':(f===4&&loc.faecher===6?'big':'');
+    d+=`<button class="dr ${cls}" data-fach="${f}" data-loc="${loc.id}" aria-pressed="${sel===f}" aria-label="${fachName(loc,f)}: ${l.length} Artikel${b?', '+b+' überfällig':''}">
+      <span>${f===1&&loc.faecher>=2?'1 Klappe':f}</span><span class="c">${b?`<span class="n bad">${b}</span>`:''}<span class="n">${l.length}</span></span></button>`;
+  }
+  let info;
+  if(sel){const l=items.filter(i=>i.fach===sel),b=l.filter(isBad).length;
+    info=`<b>${fachName(loc,sel)}</b><span>${l.length} Artikel${b?`, <span style="color:var(--bad);font-weight:600">${b} überfällig</span>`:''}</span><button class="txtbtn" data-fach="0" data-loc="${loc.id}">Alle Fächer zeigen</button>`}
+  else info=`<b>${loc.faecher} Fächer</b><span>Von oben nach unten nummeriert. Tippe auf ein Fach, um nur seinen Inhalt zu sehen.</span><span>Rote Zahl = überfällig.</span>`;
+  return`<div class="fzcard"><div class="freezer" role="group" aria-label="Schema ${esc(loc.name)}">${d}</div><div class="fzinfo">${info}</div></div>`}
+function renderRecent(){
+  const r=S.items.filter(i=>i.entnommen_am).sort((a,b)=>b.entnommen_am.localeCompare(a.entnommen_am));
+  if(!r.length){$('#recent').innerHTML='';return}
+  $('#recent').innerHTML=`<button class="recent-t" id="recentT" aria-expanded="${ui.recentOpen}"><span>Zuletzt entnommen (${r.length})</span>${ICON.chev}</button>`+
+    (ui.recentOpen?`<div class="sect"><div class="group">${r.map(i=>`<div class="rrow"><span class="ico" aria-hidden="true">${catOf(i.kategorie).e}</span><span class="txt"><span class="nm" style="display:block">${esc(i.name)}</span><span class="mt" style="display:block">entnommen ${agoText(i.entnommen_am)}</span></span><button class="txtbtn" data-restore="${i.id}" aria-label="${esc(i.name)} zurücklegen">Zurücklegen</button></div>`).join('')}</div><p class="sfoot" style="margin:6px 6px 0">Wird nach 30 Tagen automatisch entfernt.</p></div>`:'');
+}
+function renderHint(all){
+  const s=S.settings,t=todayISO();
+  const since=s.lastBackup||s.firstUse||t,dism=s.hintDismissed&&daysBetween(s.hintDismissed,t)<30;
+  $('#hint').innerHTML=all.length&&daysBetween(since,t)>30&&!dism?
+    `<div class="hintcard"><span class="grow">${s.lastBackup?'Letzte Sicherung ist über 30 Tage her.':'Noch keine Sicherung erstellt.'}</span><button class="txtbtn b" data-act="backup">Sichern</button><button class="txtbtn" data-act="hintx" aria-label="Hinweis ausblenden">✕</button></div>`:'';
+}
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+
+/* ---------- Entnehmen + Rückgängig ---------- */
+function takeOne(id,fromSwipe){
+  const it=S.items.find(i=>i.id===id);if(!it)return;
+  const prev={...it};
+  let msg;
+  const finish=()=>{save();render();toast(msg,()=>{Object.assign(it,prev);save();render()})};
+  if(countable(it.einheit)&&it.menge>1){it.menge--;msg=`${it.name}: 1 entnommen – noch ${fmtQty(it.menge,it.einheit)}`;finish();flash(id)}
+  else{it.entnommen_am=todayISO();msg=`${it.name} entnommen`;collapse(id,fromSwipe,finish)}
+}
+function collapse(id,fromSwipe,done){
+  const rw=list.querySelector(`.rw[data-id="${id}"]`);
+  if(!rw||matchMedia('(prefers-reduced-motion: reduce)').matches){done();return}
+  const row=rw.querySelector('.row');
+  rw.style.height=rw.offsetHeight+'px';
+  row.style.transform='translateX(-100%)';
+  requestAnimationFrame(()=>{rw.style.transition='height .26s ease .14s';rw.style.height='0px'});
+  setTimeout(done,fromSwipe?380:420);
+}
+function flash(id){const rw=list.querySelector(`.rw[data-id="${id}"]`);if(rw){rw.classList.remove('flash');void rw.offsetWidth;rw.classList.add('flash')}}
+
+let toastTimer;
+function toast(msg,undo){
+  const t=$('#toast');t.querySelector('.tmsg').textContent=msg;
+  const b=t.querySelector('.tundo');b.hidden=!undo;
+  b.onclick=()=>{hideToast();undo&&undo()};
+  t.classList.toggle('up',$('#formSheet').classList.contains('open'));
+  t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(hideToast,5000);
+}
+function hideToast(){$('#toast').classList.remove('show')}
+
+/* ---------- Wischen nach links ---------- */
+let sw=null,openRow=null,suppress=false;
+function closeOpenRow(){if(openRow){openRow.querySelector('.row').style.transform='';openRow.classList.remove('full');openRow=null}}
+list.addEventListener('pointerdown',e=>{
+  const row=e.target.closest('.row');if(!row||e.button>0)return;
+  const rw=row.parentElement;
+  if(openRow&&openRow!==rw)closeOpenRow();
+  sw={rw,row,x:e.clientX,y:e.clientY,base:openRow===rw?-96:0,dx:0,mode:null,pid:e.pointerId,w:rw.offsetWidth};
+});
+list.addEventListener('pointermove',e=>{
+  if(!sw||e.pointerId!==sw.pid)return;
+  const dx=e.clientX-sw.x,dy=e.clientY-sw.y;
+  if(!sw.mode){
+    if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.2){sw.mode='h';sw.row.style.transition='none';try{sw.row.setPointerCapture(sw.pid)}catch(_){}}
+    else if(Math.abs(dy)>8){sw=null;return}
+    else return;
+  }
+  let t=Math.min(0,sw.base+dx);
+  if(t>-sw.w)sw.dx=t;
+  sw.row.style.transform=`translateX(${sw.dx}px)`;
+  sw.rw.classList.toggle('full',sw.dx<-sw.w*.55);
+});
+function endSwipe(){
+  if(!sw)return;const s=sw;sw=null;
+  if(s.mode!=='h')return;
+  suppress=true;setTimeout(()=>suppress=false,60);
+  s.row.style.transition='';
+  if(s.dx<-s.w*.55){openRow=null;s.row.style.transform='translateX(-100%)';takeOne(s.rw.dataset.id,true)}
+  else if(s.dx<-44){s.row.style.transform='translateX(-96px)';openRow=s.rw;s.rw.classList.remove('full')}
+  else{s.row.style.transform='';s.rw.classList.remove('full');if(openRow===s.rw)openRow=null}
+}
+list.addEventListener('pointerup',endSwipe);
+list.addEventListener('pointercancel',()=>{if(sw&&sw.mode==='h')endSwipe();else sw=null});
+
+/* ---------- Klicks in der Übersicht ---------- */
+$('#main').addEventListener('click',e=>{
+  if(suppress){e.preventDefault();e.stopPropagation();return}
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.take){closeOpenRow();takeOne(t.dataset.take);return}
+  if(t.dataset.open){if(openRow){closeOpenRow();return}openEdit(t.dataset.open);return}
+  closeOpenRow();
+  if(t.dataset.mode){ui.mode=t.dataset.mode;S.settings.view=ui.mode;save();render();return}
+  if(t.dataset.fach!==undefined&&t.dataset.loc){const f=+t.dataset.fach;ui.fach=f&&!(ui.fach&&ui.fach.f===f&&ui.fach.loc===t.dataset.loc)?{loc:t.dataset.loc,f}:null;render();return}
+  if(t.dataset.restore){const it=S.items.find(i=>i.id===t.dataset.restore);if(it){it.entnommen_am=null;save();render();toast(`${it.name} zurückgelegt`,()=>{it.entnommen_am=todayISO();save();render()})}return}
+  if(t.id==='recentT'){ui.recentOpen=!ui.recentOpen;renderRecent();return}
+  if(t.id==='dueBtn'){ui.mode='urgency';$('#q').value='';$('#qClear').hidden=true;render();list.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(t.dataset.add!==undefined||t.id==='addBtn'){openAdd();return}
+  if(t.id==='openSettings'){openSettings();return}
+  if(t.id==='qClear'){$('#q').value='';t.hidden=true;render();$('#q').focus();return}
+  if(t.dataset.act==='backup'){doBackup();return}
+  if(t.dataset.act==='hintx'){S.settings.hintDismissed=todayISO();save();render();return}
+},true);
+$('#q').addEventListener('input',()=>{$('#qClear').hidden=!$('#q').value;render()});
+$('#mainScroll').addEventListener('scroll',e=>{$('#mainBar').classList.toggle('scrolled',e.target.scrollTop>36);if(openRow)closeOpenRow()},{passive:true});
+
+/* =========================================================
+   Sheet: Hinzufügen / Bearbeiten
+   ========================================================= */
+let F=null;
+const fName=$('#fName'),fRest=$('#fRest'),fSug=$('#fSuggest'),sheet=$('#formSheet');
+function recalc(){if(!F.untilManual)F.until=addMonths(F.frozen,S.months[F.cat]??3)}
+function freshForm(keep){
+  const t=todayISO(),s=S.settings;
+  F={mode:'add',id:null,cat:'sonst',catHow:null,catManual:false,catOpen:false,menge:1,einheit:'Stück',
+     loc:keep?keep.loc:(S.locations.some(l=>l.id===s.lastLoc)?s.lastLoc:S.locations[0].id),
+     fach:keep?keep.fach:s.lastFach??null,frozen:keep?keep.frozen:t,frozenPreset:keep?keep.frozenPreset:'0',
+     source:'selbst',until:t,untilManual:false};
+  if(!locOf(F.loc).faecher)F.fach=null;
+  recalc();
+}
+function openAdd(){
+  freshForm();fName.value='';
+  $('#formTitle').textContent='Neuer Artikel';$('#fCancel').hidden=false;$('#fSave').textContent='Sichern';
+  renderSuggest();renderForm();
+  showSheet();
+  fName.focus(); // im selben Tipp → iOS öffnet die Tastatur sofort
+}
+function openEdit(id){
+  const it=S.items.find(i=>i.id===id);if(!it)return;
+  F={mode:'edit',id,cat:it.kategorie,catHow:null,catManual:false,catOpen:false,menge:it.menge,einheit:it.einheit,loc:it.lagerort,fach:it.fach,
+     frozen:it.eingefroren_am,frozenPreset:'custom',source:it.quelle,until:it.verbrauchen_bis,untilManual:!!it.verbrauchen_bis_manuell};
+  fName.value=it.name;
+  $('#formTitle').textContent='Artikel';$('#fCancel').hidden=true;$('#fSave').textContent='Fertig';
+  fSug.innerHTML='';renderForm();showSheet();
+}
+function showSheet(){sheet.querySelector('.sheet').style.transform='';sheet.classList.add('open');$('#fBody').scrollTop=0;hideToast()}
+function closeSheet(){sheet.classList.remove('open');fName.blur();F=null}
+
+function histList(){
+  const m=new Map();
+  S.items.forEach(i=>{const k=norm(i.name),h=m.get(k);if(!h)m.set(k,{tpl:i,count:1});else{h.count++;if(i.erstellt_am>h.tpl.erstellt_am)h.tpl=i}});
+  return[...m.values()].sort((a,b)=>b.count-a.count||b.tpl.erstellt_am.localeCompare(a.tpl.erstellt_am));
+}
+function renderSuggest(){
+  if(!F||F.mode!=='add'){fSug.innerHTML='';return}
+  const q=norm(fName.value);
+  if(!q){
+    const h=histList().slice(0,10);
+    fSug.innerHTML=h.length?`<div class="sglabel">Nochmal hinzufügen · ein Tipp = eingelagert</div><div class="chips">${h.map(x=>`<button class="chip" data-readd="${x.tpl.id}">${catOf(x.tpl.kategorie).e} ${esc(x.tpl.name)}</button>`).join('')}</div>`:'';
+    return}
+  const hist=histList().map(x=>x.tpl.name),pool=[...new Set([...hist,...COMMON])];
+  const hits=pool.filter(n=>{const k=norm(n);return k.includes(q)&&k!==q}).sort((a,b)=>norm(b).startsWith(q)-norm(a).startsWith(q)).slice(0,8);
+  fSug.innerHTML=hits.length?`<div class="chips">${hits.map(n=>`<button class="chip" data-pick="${esc(n)}">${catOf(detect(n).cat).e} ${esc(n)}</button>`).join('')}</div>`:'';
+}
+function applyName(){
+  if(!F.catManual){const d=detect(fName.value);F.cat=d.cat;F.catHow=d.how;recalc()}
+}
+
+function renderForm(){
+  const c=catOf(F.cat),loc=locOf(F.loc),t=todayISO(),buy=F.source==='gekauft';
+  const howTag=F.catHow==='erkannt'?'<span class="tag auto">automatisch</span>':F.catHow==='gemerkt'?'<span class="tag auto">gemerkt</span>':F.catHow==='gewählt'?'<span class="tag">von dir</span>':F.catHow==='unbekannt'?'<span class="tag">bitte prüfen</span>':'';
+  const qChips=[[1,'Stück'],[2,'Stück'],[3,'Stück'],[4,'Stück'],[500,'g'],[1,'kg']].map(([m,u])=>`<button class="chip" data-qty="${m}|${u}" aria-pressed="${F.menge==m&&F.einheit===u}">${fmtQty(m,u).replace(' Stück','')}</button>`).join('');
+  const units=['Stück','Packung','Portion','g','kg'].map(u=>`<option ${u===F.einheit?'selected':''}>${u}</option>`).join('');
+  const locChips=S.locations.map(l=>`<button class="chip" data-loc="${l.id}" aria-pressed="${l.id===F.loc}">${esc(l.name)}</button>`).join('');
+  let drawers='';
+  if(loc.faecher){for(let f=1;f<=loc.faecher;f++)drawers+=`<button class="drw" data-fach="${f}" aria-pressed="${F.fach===f}" aria-label="${fachName(loc,f)}">${f}</button>`;
+    drawers=`<div class="flabel" style="margin-top:14px">Fach <span style="font-weight:400">– von oben (1 = Klappe) nach unten</span></div><div class="drawrow">${drawers}<button class="drw none" data-fach="0" aria-pressed="${!F.fach}">egal</button></div>`}
+  const presets=[['0','Heute',t],['7','Vor 1 Woche',addDays(t,-7)],['m1','Vor 1 Monat',addMonths(t,-1)],['m3','Vor 3 Monaten',addMonths(t,-3)],['m6','Vor 6 Monaten',addMonths(t,-6)]];
+  const custom=F.frozenPreset==='custom';
+  const dChips=presets.map(([k,l,v])=>`<button class="chip" data-frozen="${k}" data-v="${v}" aria-pressed="${!custom&&F.frozenPreset===k}">${l}</button>`).join('')+
+    `<span class="chip" aria-pressed="${custom}">${custom?fmt(F.frozen):'Datum …'}<input type="date" id="fFrozenDate" value="${F.frozen}" max="${t}" aria-label="${buy?'Eingelagert am':'Eingefroren am'}: Datum wählen"></span>`;
+  const n=daysBetween(t,F.until);
+  let note;
+  if(buy)note=F.untilManual?'Datum von der Packung (MHD). Die App rechnet hier nichts.':'<span class="mhdwarn">Bitte MHD von der Packung eintragen</span> – solange gilt der Richtwert.';
+  else note=F.untilManual?`Von dir gesetzt. <button class="txtbtn" data-until-reset>Richtwert verwenden (${S.months[F.cat]} Mon.)</button>`:`Richtwert ${esc(c.n)}: ${S.months[F.cat]} ${S.months[F.cat]==1?'Monat':'Monate'} – Empfehlung, keine Sicherheitsgrenze.`;
+
+  let h=`
+  <div class="fgroup">
+    <button class="frow" data-cattoggle aria-expanded="${F.catOpen}">
+      <span class="ico" aria-hidden="true">${c.e}</span>
+      <span class="grow"><span class="t" style="display:block">Kategorie</span><span class="v">${esc(c.n)}</span></span>${howTag}${ICON.chev}
+    </button>
+    ${F.catOpen?`<div class="catgrid">${CATS.map(x=>`<button class="chip" data-cat="${x.id}" aria-pressed="${x.id===F.cat}">${x.e} ${esc(x.n)}</button>`).join('')}</div>`:''}
+  </div>
+  <div class="fgroup"><div class="fblock">
+    <div class="flabel">Menge</div><div class="chips">${qChips}</div>
+    <div class="stepper"><button data-step="-1" aria-label="Weniger">${ICON.minus}</button><output aria-live="polite">${fmtQty(F.menge,F.einheit)}</output><button data-step="1" aria-label="Mehr">${ICON.plus}</button>
+      <select id="fUnit" aria-label="Einheit">${units}</select></div>
+  </div></div>
+  <div class="fgroup"><div class="fblock">
+    <div class="flabel">Lagerort</div><div class="chips">${locChips}</div>${drawers}
+  </div></div>
+  <div class="fgroup">
+    <div class="fblock"><div class="flabel">${buy?'Eingelagert am':'Eingefroren am'}</div><div class="chips">${dChips}</div></div>
+    <label class="frow"><span class="grow"><span class="v" style="font-weight:500">Gekauftes TK-Produkt</span><small>MHD von der Packung statt Richtwert</small></span><input type="checkbox" class="switch" id="fSource" ${buy?'checked':''}></label>
+    <div class="frow"><span class="grow"><span class="t" style="display:block">${buy?'MHD laut Packung':'Verbrauchen bis'}</span><span class="v">${fmt(F.until)}</span> <span style="color:${n<=0?'var(--bad)':'var(--label2)'};font-size:.88rem">· ${inText(n)}</span></span>
+      <span class="datebtn">Ändern<input type="date" id="fUntil" value="${F.until}" aria-label="${buy?'MHD':'Verbrauchen bis'} ändern"></span></div>
+    <div class="fnote">${note}</div>
+  </div>`;
+  if(F.mode==='add'){
+    h+=`<button class="bigbtn" id="fSaveMain">Sichern</button><button class="bigbtn sec" id="fSaveNext">Sichern &amp; nächsten Artikel</button>`;
+  }else{
+    const it=S.items.find(i=>i.id===F.id);
+    const one=countable(F.einheit)&&F.menge>1;
+    h+=`<div class="fgroup">
+      <button class="actrow" data-act="take">${ICON.minusCircle.replace('class="ic"','class="ic" style="width:22px;height:22px"')}${one?'1 entnehmen':'Entnehmen'}</button>
+      ${one?`<button class="actrow" data-act="takeall">${ICON.out}Alles entnehmen</button>`:''}
+    </div>
+    <div class="fgroup"><textarea class="note" id="fNote" placeholder="Notiz (optional)" aria-label="Notiz">${esc(it?.notiz)}</textarea></div>
+    <p class="meta">Erfasst am ${fmt(it?.erstellt_am)} · Änderungen werden sofort gespeichert</p>`;
+  }
+  fRest.innerHTML=h;
+}
+
+/* Formular-Ereignisse */
+function changed(){ if(F.mode==='edit')commitEdit(); renderForm(); }
+fName.addEventListener('input',()=>{applyName();renderSuggest();if(F.mode==='edit')commitEdit();renderForm()});
+fName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(F.mode==='add')saveNew(false);else fName.blur()}});
+fSug.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.readd){reAdd(b.dataset.readd);return}
+  if(b.dataset.pick){
+    const name=b.dataset.pick;fName.value=name;
+    const h=histList().find(x=>norm(x.tpl.name)===norm(name));
+    if(h){const t=h.tpl;F.cat=t.kategorie;F.catHow='gemerkt';F.menge=t.menge;F.einheit=t.einheit;if(S.locations.some(l=>l.id===t.lagerort)){F.loc=t.lagerort;F.fach=t.fach}recalc()}
+    else applyName();
+    fName.blur();renderSuggest();renderForm();
+  }
+});
+fRest.addEventListener('click',e=>{
+  const inp=e.target.closest('input[type=date]');
+  if(inp){try{inp.showPicker&&inp.showPicker()}catch(_){}return}
+  const b=e.target.closest('button');if(!b)return;
+  const d=b.dataset;
+  if(d.cattoggle!==undefined){F.catOpen=!F.catOpen;renderForm();return}
+  if(d.cat){F.cat=d.cat;F.catManual=true;F.catHow='gewählt';F.catOpen=false;recalc();changed();return}
+  if(d.qty){const[m,u]=d.qty.split('|');F.menge=+m;F.einheit=u;changed();return}
+  if(d.step){const st={g:100,kg:.5}[F.einheit]||1,min={g:50,kg:.5}[F.einheit]||1;F.menge=Math.max(min,Math.round((F.menge+ +d.step*st)*10)/10);changed();return}
+  if(d.loc){F.loc=d.loc;const l=locOf(d.loc);if(!l.faecher)F.fach=null;else if(F.fach>l.faecher)F.fach=null;changed();return}
+  if(d.fach!==undefined){F.fach=+d.fach||null;changed();return}
+  if(d.frozen){F.frozenPreset=d.frozen;F.frozen=d.v;recalc();changed();return}
+  if(d.untilReset!==undefined){F.untilManual=false;recalc();changed();return}
+  if(b.id==='fSaveMain'){saveNew(false);return}
+  if(b.id==='fSaveNext'){saveNew(true);return}
+  if(d.act==='take'){const id=F.id;closeSheet();setTimeout(()=>takeOne(id),250);return}
+  if(d.act==='takeall'){const it=S.items.find(i=>i.id===F.id),prev={...it};closeSheet();it.entnommen_am=todayISO();save();render();toast(`${it.name} komplett entnommen`,()=>{Object.assign(it,prev);save();render()});return}
+});
+fRest.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='fUnit'){F.einheit=t.value;if(!countable(t.value)&&F.menge<10&&t.value==='g')F.menge=500;if(t.value==='kg'&&F.menge>20)F.menge=1;changed()}
+  if(t.id==='fFrozenDate'&&t.value){F.frozen=t.value;F.frozenPreset='custom';recalc();changed()}
+  if(t.id==='fUntil'&&t.value){F.until=t.value;F.untilManual=true;changed()}
+  if(t.id==='fSource'){F.source=t.checked?'gekauft':'selbst';F.untilManual=false;recalc();changed();
+    if(t.checked){const u=$('#fUntil');try{u&&u.showPicker&&u.showPicker()}catch(_){}}}
+});
+fRest.addEventListener('input',e=>{if(e.target.id==='fNote'&&F.mode==='edit'){const it=S.items.find(i=>i.id===F.id);if(it){it.notiz=e.target.value;save()}}});
+function commitEdit(){
+  const it=S.items.find(i=>i.id===F.id);if(!it)return;
+  Object.assign(it,{name:fName.value.trim()||it.name,kategorie:F.cat,menge:F.menge,einheit:F.einheit,lagerort:F.loc,fach:F.fach,
+    eingefroren_am:F.frozen,verbrauchen_bis:F.until,verbrauchen_bis_manuell:F.untilManual,quelle:F.source});
+  if(F.catManual)S.learned[norm(it.name)]=F.cat;
+  save();render();
+}
+function saveNew(keepOpen){
+  const name=fName.value.trim();
+  if(!name){const nb=$('#nameBox');nb.classList.remove('shake');void nb.offsetWidth;nb.classList.add('shake');fName.focus();return}
+  const it={id:uid(),name,kategorie:F.cat,menge:F.menge,einheit:F.einheit,lagerort:F.loc,fach:F.fach||null,eingefroren_am:F.frozen,
+    verbrauchen_bis:F.until,verbrauchen_bis_manuell:F.untilManual,quelle:F.source,erstellt_am:todayISO(),entnommen_am:null,notiz:''};
+  S.items.push(it);
+  if(F.catManual)S.learned[norm(name)]=F.cat;
+  S.settings.lastLoc=F.loc;S.settings.lastFach=F.fach||null;
+  save();render();
+  const undo=()=>{S.items=S.items.filter(i=>i.id!==it.id);save();render()};
+  if(keepOpen){
+    freshForm({loc:F.loc,fach:F.fach,frozen:F.frozen,frozenPreset:F.frozenPreset});
+    fName.value='';renderSuggest();renderForm();fName.focus();$('#fBody').scrollTop=0;
+    toast(`${name} gespeichert – weiter geht’s`,undo);
+  }else{
+    closeSheet();toast(`${name} gespeichert`,undo);
+    if(ui.mode!=='urgency'||$('#q').value){}
+    setTimeout(()=>{const rw=list.querySelector(`.rw[data-id="${it.id}"]`);if(rw){rw.scrollIntoView({behavior:'smooth',block:'center'});flash(it.id)}},380);
+  }
+}
+function reAdd(tplId){
+  const tpl=S.items.find(i=>i.id===tplId);if(!tpl)return;
+  const t=todayISO(),keepDur=tpl.verbrauchen_bis_manuell;
+  const it={...tpl,id:uid(),eingefroren_am:t,erstellt_am:t,entnommen_am:null,notiz:'',
+    lagerort:S.locations.some(l=>l.id===tpl.lagerort)?tpl.lagerort:S.locations[0].id,
+    verbrauchen_bis:keepDur?addDays(t,Math.max(1,daysBetween(tpl.eingefroren_am,tpl.verbrauchen_bis))):addMonths(t,S.months[tpl.kategorie]??3)};
+  S.items.push(it);save();render();
+  toast(`${it.name} eingelagert (${fmtQty(it.menge,it.einheit)})`,()=>{S.items=S.items.filter(i=>i.id!==it.id);save();render()});
+}
+$('#fCancel').onclick=closeSheet;
+$('#fSave').onclick=()=>{if(F&&F.mode==='add')saveNew(false);else closeSheet()};
+sheet.querySelector('.dim').onclick=()=>{if(F&&F.mode==='add'&&fName.value.trim()){saveNew(false)}else closeSheet()};
+
+/* Sheet nach unten ziehen zum Schließen */
+(function(){
+  const head=$('#fHead'),sh=sheet.querySelector('.sheet');let y0=null,dy=0;
+  head.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;y0=e.clientY;dy=0;sh.style.transition='none';head.setPointerCapture(e.pointerId)});
+  head.addEventListener('pointermove',e=>{if(y0==null)return;dy=Math.max(0,e.clientY-y0);sh.style.transform=`translateY(${dy}px)`});
+  const end=()=>{if(y0==null)return;y0=null;sh.style.transition='';if(dy>110){sh.style.transform='';closeSheet()}else sh.style.transform=''};
+  head.addEventListener('pointerup',end);head.addEventListener('pointercancel',end);
+})();
+
+/* =========================================================
+   Rote Zahl am App-Symbol (Badging API, iOS 16.4+ nur als Home-Bildschirm-App,
+   setzt die Erlaubnis „Mitteilungen“ voraus; es werden keine Mitteilungen verschickt)
+   ========================================================= */
+const badgeSupported=()=>'setAppBadge' in navigator;
+const isHomeScreenApp=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+function updateBadge(n){
+  if(!badgeSupported())return;
+  const on=S.settings.badge&&window.Notification&&Notification.permission==='granted';
+  const p=on&&n>0?navigator.setAppBadge(n):navigator.clearAppBadge();
+  p&&p.catch&&p.catch(()=>{});
+}
+function badgeStatus(){
+  if(!badgeSupported()||!window.Notification)return isHomeScreenApp()?'Auf diesem Gerät nicht verfügbar.':'Nur in der App vom Home-Bildschirm verfügbar.';
+  if(Notification.permission==='denied')return'Mitteilungen sind blockiert – in den iPhone-Einstellungen bei „G-Star Freeze“ erlauben.';
+  return S.settings.badge&&Notification.permission==='granted'?`Aktiv – zeigt gerade ${active().filter(isBad).length}.`:'Aus';
+}
+async function toggleBadge(on){
+  if(!on){S.settings.badge=false;save();updateBadge(0);renderSettings();return}
+  if(!badgeSupported()||!window.Notification){
+    alertBox('Nur auf dem Home-Bildschirm','Die rote Zahl funktioniert, wenn G-Star Freeze über Safari → Teilen → „Zum Home-Bildschirm“ installiert ist und von dort gestartet wird.',[{l:'OK',p:1}]);
+    renderSettings();return}
+  let perm=Notification.permission;
+  if(perm==='default'){try{perm=await Notification.requestPermission()}catch(_){perm='denied'}}
+  S.settings.badge=perm==='granted';save();render();renderSettings();
+  if(perm==='granted')toast('Rote Zahl am App-Symbol ist an');
+  else alertBox('Erlaubnis fehlt','Ohne die Erlaubnis „Mitteilungen“ lässt iOS keine Zahl am Symbol zu. Du kannst sie später in den iPhone-Einstellungen bei „G-Star Freeze“ erlauben.',[{l:'OK',p:1}]);
+}
+
+/* =========================================================
+   Sicherung / CSV
+   ========================================================= */
+async function shareOrDownload(name,text,mime){
+  const file=new File([text],name,{type:mime});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file]});return'shared'}catch(e){if(e.name==='AbortError')return'aborted'}
+  }
+  const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);return'downloaded';
+}
+async function doBackup(){
+  const data={app:'gstar-freeze',format:1,erstellt:new Date().toISOString(),daten:{items:S.items,locations:S.locations,months:S.months,learned:S.learned}};
+  const r=await shareOrDownload(`g-star-freeze-sicherung-${todayISO()}.json`,JSON.stringify(data,null,1),'application/json');
+  if(r==='aborted')return;
+  S.settings.lastBackup=todayISO();save();render();renderSettings();
+  toast(r==='shared'?'Sicherung erstellt – in „Dateien“ ablegen':'Sicherung heruntergeladen');
+}
+$('#fileIn').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let d;try{d=JSON.parse(await f.text())}catch(_){alertBox('Datei nicht lesbar','Das ist keine gültige G-Star-Freeze-Sicherung.',[{l:'OK',p:1}]);return}
+  if(!d||d.app!=='gstar-freeze'||!d.daten||!Array.isArray(d.daten.items)){alertBox('Falsche Datei','Diese Datei ist keine G-Star-Freeze-Sicherung.',[{l:'OK',p:1}]);return}
+  const n=d.daten.items.filter(i=>!i.entnommen_am).length;
+  alertBox('Sicherung laden?',`Sicherung vom ${fmt((d.erstellt||'').slice(0,10))} mit ${n} Artikeln. Deine aktuellen Daten werden dabei ersetzt.`,[
+    {l:'Laden',p:1,f:()=>{const keep=S.settings;S={...S,items:d.daten.items,locations:d.daten.locations||S.locations,months:{...S.months,...d.daten.months},learned:d.daten.learned||{},settings:keep};save();render();renderSettings();toast('Sicherung geladen')}},
+    {l:'Abbrechen'}]);
+});
+function exportCSV(){
+  const q=v=>{v=String(v??'');return/[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const head=['Name','Kategorie','Menge','Einheit','Lagerort','Fach','Eingefroren am','Verbrauchen bis','Datum manuell','Quelle','Erfasst am','Entnommen am','Notiz'];
+  const rows=S.items.map(i=>[i.name,catOf(i.kategorie).n,String(i.menge).replace('.',','),i.einheit,locOf(i.lagerort).name,i.fach||'',fmt(i.eingefroren_am),fmt(i.verbrauchen_bis),i.verbrauchen_bis_manuell?'ja':'nein',i.quelle==='gekauft'?'gekauft (MHD)':'selbst eingefroren',fmt(i.erstellt_am),fmt(i.entnommen_am),i.notiz]);
+  const csv='\uFEFF'+[head,...rows].map(r=>r.map(q).join(';')).join('\r\n');
+  shareOrDownload(`g-star-freeze-${todayISO()}.csv`,csv,'text/csv').then(r=>{if(r!=='aborted')toast('CSV erstellt')});
+}
+
+/* =========================================================
+   Einstellungen
+   ========================================================= */
+const setUI={locOpen:null,monthsOpen:false};
+function openSettings(){renderSettings();$('#settings').classList.add('open');$('#settings').removeAttribute('aria-hidden');$('#main').classList.add('pushed');$('#setScroll').scrollTop=0}
+function closeSettings(){$('#settings').classList.remove('open');$('#settings').setAttribute('aria-hidden','true');$('#main').classList.remove('pushed');render()}
+function renderSettings(){
+  const s=S.settings,cnt=id=>active().filter(i=>i.lagerort===id).length;
+  const locs=S.locations.map(l=>{
+    const open=setUI.locOpen===l.id,n=cnt(l.id);
+    return`<button class="srow" data-locopen="${l.id}" aria-expanded="${open}"><span class="grow">${esc(l.name)}<small>${l.faecher?l.faecher+' Fächer':'ohne Fächer'} · ${n} Artikel</small></span>${ICON.chev}</button>`+
+    (open?`<div class="locedit">
+      <div class="srow"><input type="text" value="${esc(l.name)}" data-locname="${l.id}" aria-label="Name des Lagerorts"></div>
+      <label class="srow"><span class="grow">Fächer / Schubladen</span><input type="checkbox" class="switch" data-locf="${l.id}" ${l.faecher?'checked':''}></label>
+      ${l.faecher?`<div class="srow"><span class="grow">Anzahl Fächer</span><span class="mstep"><button data-fcount="${l.id}|-1" aria-label="Ein Fach weniger">${ICON.minus}</button><output>${l.faecher}</output><button data-fcount="${l.id}|1" aria-label="Ein Fach mehr">${ICON.plus}</button></span></div>`:''}
+      ${S.locations.length>1?(n?`<div class="srow"><small>Zum Entfernen erst die ${n} Artikel entnehmen oder umlagern.</small></div>`:`<button class="srow btn danger" data-locdel="${l.id}">Lagerort entfernen</button>`):''}
+    </div>`:'')}).join('');
+  const months=setUI.monthsOpen?CATS.map(c=>`<div class="srow"><span class="ico" aria-hidden="true" style="width:34px;height:34px;font-size:1.1rem;border-radius:10px">${c.e}</span><span class="grow">${esc(c.n)}</span>
+     <span class="mstep"><button data-mon="${c.id}|-1" aria-label="${esc(c.n)} ein Monat weniger">${ICON.minus}</button><output>${S.months[c.id]} Mon.</output><button data-mon="${c.id}|1" aria-label="${esc(c.n)} ein Monat mehr">${ICON.plus}</button></span></div>`).join('')+
+     `<button class="srow btn" data-act="monreset">Auf Standardwerte zurücksetzen</button>`:'';
+  const nl=Object.keys(S.learned).length;
+  $('#setScroll').innerHTML=`
+    <h1 class="lt">Einstellungen</h1>
+    <div class="shdr">Lagerorte</div>
+    <div class="sgroup">${locs}<div class="srow"><input type="text" id="newLoc" placeholder="Neuer Lagerort, z. B. Truhe Garage" aria-label="Neuer Lagerort"><button class="txtbtn b" data-act="addloc">Hinzufügen</button></div></div>
+    <p class="sfoot">Neue Artikel landen automatisch am zuletzt genutzten Ort.</p>
+
+    <div class="shdr">Lagerdauer (Richtwerte bei −18 °C)</div>
+    <div class="sgroup"><button class="srow" data-act="months" aria-expanded="${setUI.monthsOpen}"><span class="grow">Monate je Kategorie<small>gilt für selbst Eingefrorenes</small></span>${ICON.chev}</button>${months}</div>
+    <p class="sfoot">Empfehlungen für die Qualität, keine Sicherheitsgrenze. Quellen: Verbraucherzentrale Niedersachsen (Stand 26.09.2025), BZfE; abgerufen am 16.11.2026. Bei gekaufter TK-Ware gilt das MHD.</p>
+
+    <div class="shdr">Kategorie-Erkennung</div>
+    <div class="sgroup"><div class="srow"><span class="grow">Gemerkte Korrekturen<small>${nl?nl+' Namen – z. B. „'+esc(Object.keys(S.learned)[0])+'“':'noch keine'}</small></span>${nl?'<button class="txtbtn" data-act="forget">Vergessen</button>':''}</div></div>
+
+    <div class="shdr">Rote Zahl am App-Symbol</div>
+    <div class="sgroup"><label class="srow"><span class="grow">Überfällige am App-Symbol zeigen<small>${badgeStatus()}</small></span><input type="checkbox" class="switch" id="badgeSw" ${s.badge?'checked':''}></label></div>
+    <p class="sfoot">Wie bei Mail oder WhatsApp: eine rote Zahl am Symbol auf dem Home-Bildschirm. iOS verlangt dafür einmalig die Erlaubnis „Mitteilungen“ – die App schickt aber keine Mitteilungen. Die Zahl wird jedes Mal aktualisiert, wenn du die App öffnest oder schließt.</p>
+
+    <div class="shdr">Datensicherung</div>
+    <div class="sgroup">
+      <button class="srow btn" data-act="backup">Sicherung erstellen</button>
+      <button class="srow btn" data-act="restore">Sicherung laden</button>
+      <button class="srow btn" data-act="csv">Als Tabelle exportieren (CSV)</button>
+    </div>
+    <p class="sfoot">Letzte Sicherung: ${s.lastBackup?fmt(s.lastBackup):'noch nie'}. Nur nötig für Handywechsel oder -verlust – im Teilen-Menü „In Dateien sichern“ wählen (z. B. iCloud Drive).</p>
+
+    <div class="shdr">Nur im Mockup</div>
+    <div class="sgroup">
+      <div class="srow"><span class="grow">Darstellung</span><span class="seg inset" role="group" aria-label="Darstellung">${['system','light','dark'].map(t=>`<button data-theme-set="${t}" aria-pressed="${s.theme===t}">${{system:'System',light:'Hell',dark:'Dunkel'}[t]}</button>`).join('')}</span></div>
+      <button class="srow btn" data-act="reset">Beispieldaten zurücksetzen</button>
+      <button class="srow btn" data-act="empty">Leeren Tiefkühler testen</button>
+      <button class="srow btn" data-act="welcome">Willkommen erneut zeigen</button>
+    </div>
+
+    <div class="shdr">Über</div>
+    <div class="sgroup"><div class="srow"><span class="grow">G-Star Freeze<small>Mockup 0.1 · Alle Daten bleiben auf diesem Gerät. Kein Konto, kein Tracking.</small></span></div></div>`;
+}
+$('#closeSettings').onclick=closeSettings;
+$('#setScroll').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.locopen){setUI.locOpen=setUI.locOpen===d.locopen?null:d.locopen;renderSettings();return}
+  if(d.fcount){const[id,v]=d.fcount.split('|'),l=locOf(id);l.faecher=Math.min(10,Math.max(1,l.faecher+ +v));save();renderSettings();return}
+  if(d.locdel){S.locations=S.locations.filter(l=>l.id!==d.locdel);if(S.settings.lastLoc===d.locdel)S.settings.lastLoc=S.locations[0].id;setUI.locOpen=null;save();renderSettings();return}
+  if(d.mon){const[id,v]=d.mon.split('|');S.months[id]=Math.min(36,Math.max(1,S.months[id]+ +v));recalcAll();save();renderSettings();return}
+  if(d.themeSet){setTheme(d.themeSet);return}
+  switch(d.act){
+    case'addloc':{const i=$('#newLoc'),n=i.value.trim();if(!n){i.focus();return}S.locations.push({id:uid(),name:n,faecher:0});save();renderSettings();toast(`Lagerort „${n}“ angelegt`);break}
+    case'months':setUI.monthsOpen=!setUI.monthsOpen;renderSettings();break;
+    case'monreset':CATS.forEach(c=>S.months[c.id]=c.m);recalcAll();save();renderSettings();toast('Richtwerte zurückgesetzt');break;
+    case'forget':S.learned={};save();renderSettings();break;
+    case'backup':doBackup();break;
+    case'restore':$('#fileIn').click();break;
+    case'csv':exportCSV();break;
+    case'reset':alertBox('Beispieldaten zurücksetzen?','Alle Änderungen aus deinen Tests gehen verloren.',[{l:'Zurücksetzen',danger:1,f:()=>{const th=S.settings.theme,dv=S.settings.device;S=seed();S.settings.welcomed=true;S.settings.theme=th;S.settings.device=dv;ui.mode='urgency';save();render();renderSettings();toast('Beispieldaten wiederhergestellt')}},{l:'Abbrechen'}]);break;
+    case'empty':{const old=S.items;S.items=[];save();closeSettings();toast('Tiefkühler geleert (nur Test)',()=>{S.items=old;save();render()});break}
+    case'welcome':closeSettings();showWelcome();break;
+  }
+});
+$('#setScroll').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.locname){const l=locOf(t.dataset.locname),v=t.value.trim();if(v){l.name=v;save();renderSettings()}}
+  if(t.id==='badgeSw'){toggleBadge(t.checked);return}
+  if(t.dataset.locf){const l=locOf(t.dataset.locf);l.faecher=t.checked?6:0;save();renderSettings()}
+});
+$('#setScroll').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='newLoc'){e.preventDefault();$('#setScroll [data-act=addloc]').click()}});
+function recalcAll(){S.items.forEach(i=>{if(!i.verbrauchen_bis_manuell&&i.quelle==='selbst')i.verbrauchen_bis=addMonths(i.eingefroren_am,S.months[i.kategorie]??3)})}
+
+/* ---------- Hinweis-Dialog ---------- */
+function alertBox(title,msg,btns){
+  const w=$('#alert');$('#alertT').textContent=title;$('#alertM').textContent=msg;
+  $('#alertB').innerHTML='';
+  btns.forEach(b=>{const el=document.createElement('button');el.className='abtn'+(b.p?' primary':'')+(b.danger?' danger':'');el.textContent=b.l;el.onclick=()=>{w.classList.remove('open');b.f&&b.f()};$('#alertB').appendChild(el)});
+  w.classList.add('open');setTimeout(()=>$('#alertB button').focus(),50);
+}
+
+/* ---------- Willkommen ---------- */
+function showWelcome(){const w=$('#welcome');w.hidden=false;w.classList.remove('out');$('#sbar').classList.add('light')}
+$('#goBtn').onclick=()=>{S.settings.welcomed=true;save();const w=$('#welcome');w.classList.add('out');$('#sbar').classList.remove('light');setTimeout(()=>w.hidden=true,400)};
+
+/* ---------- Hell / Dunkel ---------- */
+const mq=matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){const t=S.settings.theme;document.documentElement.dataset.theme=t==='system'?(mq.matches?'dark':'light'):t;
+  $$('#devbar [data-theme-set]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.themeSet===t))}
+function setTheme(t){S.settings.theme=t;save();applyTheme();if($('#settings').classList.contains('open'))renderSettings()}
+mq.addEventListener&&mq.addEventListener('change',applyTheme);
+
+/* ---------- Desktop-Vorschau im iPhone-Rahmen ---------- */
+const DEV={'16e':{w:390,h:844,top:47,notch:1},'16':{w:393,h:852,top:59},'16pm':{w:440,h:956,top:62}};
+let framed=false;
+function setupFrame(){
+  const fp=new URLSearchParams(location.search).get('frame');
+  framed=fp==='1'||(fp!=='0'&&!navigator.standalone&&matchMedia('(min-width: 640px) and (hover: hover) and (pointer: fine)').matches);
+  document.body.classList.toggle('framed',framed);
+  const app=$('#app');
+  if(!framed){['--w','--h','--safe-top','--safe-bottom'].forEach(p=>app.style.removeProperty(p));$('#device').style.transform='';return}
+  const k=DEV[S.settings.device]?S.settings.device:'16',d=DEV[k];
+  app.style.setProperty('--w',d.w+'px');app.style.setProperty('--h',d.h+'px');
+  app.style.setProperty('--safe-top',d.top+'px');app.style.setProperty('--safe-bottom','34px');
+  $('#island').classList.toggle('notch',!!d.notch);
+  $$('#devbar [data-dev]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.dev===k));
+  const top=$('#devbar').offsetHeight+16,s=Math.min(1,(innerHeight-top-20)/(d.h+30),(innerWidth-30)/(d.w+30));
+  $('#device').style.marginTop=top+'px';
+  $('#device').style.transform=`scale(${s})`;$('#device').style.transformOrigin='center top';
+}
+$('#devbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.dev){S.settings.device=b.dataset.dev;save();setupFrame()}
+  if(b.dataset.themeSet)setTheme(b.dataset.themeSet)});
+addEventListener('resize',setupFrame);
+
+/* Rahmen darf nie wegscrollen (z. B. wenn iOS ein fokussiertes Feld „sichtbar“ machen will) */
+['#app','#main','#settings','#formSheet'].forEach(s=>{const el=$(s);el.addEventListener('scroll',()=>{if(el.scrollTop||el.scrollLeft){el.scrollTop=0;el.scrollLeft=0}})});
+
+/* ---------- Start ---------- */
+load();
+ui.mode=S.settings.view||'urgency';
+applyTheme();setupFrame();render();
+if(!S.settings.welcomed)showWelcome();
+save();
+// Beim Zurückkehren in die App Tage neu berechnen
+// Beim Öffnen und Schließen Zahl am App-Symbol aktualisieren
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();else updateBadge(active().filter(isBad).length)});
+</script>
+</body>
+</html>
